@@ -1,0 +1,466 @@
+#include "App1.h"
+using namespace std;
+App1::App1()
+{
+	floor = nullptr;
+	textureShader = nullptr;
+	greyscaleToggle = false;
+	comparisonSliderPosition = 0.5f;
+}
+
+void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeight, Input *in, bool VSYNC, bool FULL_SCREEN)
+{
+	// Call super/parent init function (required!)
+	BaseApplication::init(hinstance, hwnd, screenWidth, screenHeight, in, VSYNC, FULL_SCREEN);
+
+	camera->setPosition(0, 15, 0);
+	camera->setRotation(0, 45, 0);
+
+	// Initialises the shaders that will be used
+	InitialiseShaders(hinstance, hwnd, screenWidth, screenHeight);
+
+	// Loads in Textures and assigns a string 
+	LoadIntextures();
+
+	// Initialise the Meshs on Scene
+	InitialiseMeshs(screenWidth, screenHeight);
+
+	// Initialise Render Textures
+	InitialiseRenderTextures(screenWidth, screenHeight);
+
+	// Initialises Variables - GUI related
+	InitialiseVariables();
+
+	// Initialises Lights
+	InitaliseLights();
+
+	// Rasterizer state for rendering skybox
+	D3D11_RASTERIZER_DESC rasterDesc;
+	ZeroMemory(&rasterDesc, sizeof(rasterDesc));
+
+	// Set the properties for the rasterizer state
+	rasterDesc.FillMode = D3D11_FILL_SOLID;  // Solid fill
+	rasterDesc.CullMode = D3D11_CULL_NONE;   // No culling for the skybox (so all faces are visible)
+	rasterDesc.FrontCounterClockwise = false;
+	rasterDesc.DepthBias = D3D11_DEFAULT_DEPTH_BIAS;
+	rasterDesc.SlopeScaledDepthBias = D3D11_DEFAULT_SLOPE_SCALED_DEPTH_BIAS;
+	rasterDesc.DepthClipEnable = true;        // Depth clipping enabled
+	rasterDesc.ScissorEnable = false;         // No scissor test
+	rasterDesc.MultisampleEnable = false;
+	rasterDesc.AntialiasedLineEnable = false;
+
+	// Create the rasterizer state
+	renderer->getDevice()->CreateRasterizerState(&rasterDesc, &skyboxRasterizerState);
+
+
+
+}
+
+
+App1::~App1()
+{
+	// Run base application deconstructor
+	BaseApplication::~BaseApplication();
+
+	// Release the Direct3D object.
+	if (floor)
+	{
+		delete floor;
+		floor = 0;
+	}
+
+	if (textureShader)
+	{
+		delete textureShader;
+		textureShader = 0;
+	}
+}
+
+
+bool App1::frame()
+{
+	bool result;
+
+	result = BaseApplication::frame();
+	if (!result)
+	{
+		return false;
+	}
+	
+	// Render the graphics.
+	result = Render();
+	if (!result)
+	{
+		return false;
+	}
+
+	return true;
+}
+
+bool App1::Render()
+{
+	
+	FirstPass();
+
+	GreyScalePass();
+
+	WatercolourPass();
+
+	ComparisonPass();
+	
+	FinalPass();
+
+	return true;
+}
+
+
+void App1::FirstPass()
+{
+	// Clear the scene. (default blue colour)
+	renderTexture->setRenderTarget(renderer->getDeviceContext());
+	renderTexture->clearRenderTarget(renderer->getDeviceContext(), 0.0f, 0.5f, 0.8f, 1.0f);
+
+	// Generate the view matrix based on the camera's position.
+	camera->update();
+
+	// Time
+	totalTime += timer->getTime();
+
+	// Get the world, view, projection, and ortho matrices from the camera and Direct3D objects.
+	XMMATRIX worldMatrix = renderer->getWorldMatrix();
+	XMMATRIX viewMatrix = camera->getViewMatrix();
+	XMMATRIX projectionMatrix = renderer->getProjectionMatrix();
+
+	// Save the current rasterizer state and set the skybox-specific one.
+    ID3D11RasterizerState* originalRasterizerState;
+    renderer->getDeviceContext()->RSGetState(&originalRasterizerState);
+    renderer->getDeviceContext()->RSSetState(skyboxRasterizerState);
+
+    // Render Skybox
+	//XMMATRIX skyboxViewMatrix = XMMatrixIdentity(); // No translation, keep skybox stationary
+
+
+	XMMATRIX skyboxTranslationMatrix = XMMatrixTranslation(camera->getPosition().x, camera->getPosition().y, camera->getPosition().z);
+    //XMMATRIX skyboxTranslationMatrix = XMMatrixTranslation(25, 10, 25);
+    XMMATRIX skyboxScalingMatrix = XMMatrixScaling(100.0f, 100.0f, 100.0f);
+    XMMATRIX skyboxTransformedWorldMatrix = worldMatrix * skyboxScalingMatrix * skyboxTranslationMatrix;
+
+    skybox->sendData(renderer->getDeviceContext());
+    skyboxShader->setShaderParameters(renderer->getDeviceContext(), skyboxTransformedWorldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"skyboxTexture"));
+    skyboxShader->render(renderer->getDeviceContext(), skybox->getIndexCount());
+
+    // Reset rasterizer state back to original for the rest of the scene.
+    renderer->getDeviceContext()->RSSetState(originalRasterizerState);
+    if (originalRasterizerState) { originalRasterizerState->Release(); }
+
+
+	// Render Floor
+	//floor->sendData(renderer->getDeviceContext());
+	//textureShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"grass"));
+	//textureShader->render(renderer->getDeviceContext(), floor->getIndexCount());
+
+	// Render Sphere
+	XMMATRIX sphereTranslationMatrix = XMMatrixTranslation(60.0f, 10.0f, 50.0f); 
+	XMMATRIX sphereScalingMatrix = XMMatrixScaling(2.0f, 2.0f, 2.0f); 
+	XMMATRIX sphereTransformedWorldMatrix = sphereScalingMatrix * sphereTranslationMatrix * worldMatrix;
+	sphere->sendData(renderer->getDeviceContext());
+	movementShader->setShaderParameters(renderer->getDeviceContext(), sphereTransformedWorldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"wood"), totalTime, 0.0);
+	movementShader->render(renderer->getDeviceContext(), floor->getIndexCount());
+
+	// Render Cube
+	XMMATRIX cubeTranslationMatrix = XMMatrixTranslation(50.0f, 10.0f, 62.5f);
+	XMMATRIX cubeScalingMatrix = XMMatrixScaling(2.0f, 2.0f, 2.0f);
+	XMMATRIX cubeTransformedWorldMatrix = cubeScalingMatrix * cubeTranslationMatrix * worldMatrix;
+	cube->sendData(renderer->getDeviceContext());
+	movementShader->setShaderParameters(renderer->getDeviceContext(), cubeTransformedWorldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"wood"), totalTime, 1.0);
+	movementShader->render(renderer->getDeviceContext(), floor->getIndexCount());
+
+
+	// Ship model
+	XMMATRIX shipTranslationMatrix = XMMatrixTranslation(40.0f, 7.0f, 40.0f);
+	XMMATRIX shipScalingMatrix = XMMatrixScaling(2.0f, 2.0f, 2.0f);
+	XMMATRIX shipRotationMatrix = XMMatrixRotationX(160);
+	XMMATRIX shipTransformedWorldMatrix = shipRotationMatrix * shipScalingMatrix * shipTranslationMatrix * worldMatrix;
+	ship->sendData(renderer->getDeviceContext());
+	textureShader->setShaderParameters(renderer->getDeviceContext(), shipTransformedWorldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"shipWood"));
+	textureShader->render(renderer->getDeviceContext(), ship->getIndexCount());
+
+	// Render Ocean
+	renderer->setAlphaBlending(true);
+	XMMATRIX oceanTranslationMatrix = XMMatrixTranslation(0.0f, 0.0f, 0.0f);
+	XMMATRIX oceanScalingMatrix = XMMatrixScaling(1.0f, 1.0f, 1.0f);
+	XMMATRIX oceanTransformedWorldMatrix = oceanScalingMatrix * oceanTranslationMatrix * worldMatrix;
+	ocean->sendData(renderer->getDeviceContext());
+	oceanShader->setShaderParameters(renderer->getDeviceContext(), oceanTransformedWorldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"water"), 
+		totalTime, amplitude, frequency, speed, numWaves, phases, transparency, directionalLight);
+	oceanShader->render(renderer->getDeviceContext(), floor->getIndexCount());
+	renderer->setAlphaBlending(false);
+
+
+}
+
+void App1::GreyScalePass()
+{
+
+	XMMATRIX worldMatrix, baseViewMatrix, orthoMatrix;
+
+	greyscaleTexture->setRenderTarget(renderer->getDeviceContext());
+	greyscaleTexture->clearRenderTarget(renderer->getDeviceContext(), 0.0f, 0.5f, 0.5f, 1.0f);
+
+	// Get the world matrix, orthographic view matrix, and orthographic projection matrix
+	worldMatrix = renderer->getWorldMatrix();
+	baseViewMatrix = camera->getOrthoViewMatrix();
+	orthoMatrix = greyscaleTexture->getOrthoMatrix();
+
+	// Disable the depth (Z) buffer
+	renderer->setZBuffer(false);
+
+	// Send mesh data to the rendering context
+	orthoMesh->sendData(renderer->getDeviceContext());
+
+	// Set shader parameters for the horizontal blur shader
+	greyscaleShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, baseViewMatrix, orthoMatrix, renderTexture->getShaderResourceView());
+
+	// Render using the horizontal blur shader
+	greyscaleShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
+
+	// Re-enable the Z buffer
+	renderer->setZBuffer(true);
+
+
+	// Reset the render target back to the original back buffer and not the render to texture anymore.
+	renderer->setBackBufferRenderTarget();
+}
+
+
+void App1::WatercolourPass()
+{
+	XMMATRIX worldMatrix, baseViewMatrix, orthoMatrix;
+
+	watercolourTexture->setRenderTarget(renderer->getDeviceContext());
+	watercolourTexture->clearRenderTarget(renderer->getDeviceContext(), 0.0f, 0.5f, 0.5f, 1.0f);
+
+	// Get the world matrix, orthographic view matrix, and orthographic projection matrix
+	worldMatrix = renderer->getWorldMatrix();
+	baseViewMatrix = camera->getOrthoViewMatrix();
+	orthoMatrix = watercolourTexture->getOrthoMatrix();
+
+	// Disable the depth (Z) buffer
+	renderer->setZBuffer(false);
+
+	// Send mesh data to the rendering context
+	orthoMesh->sendData(renderer->getDeviceContext());
+
+	// Set shader parameters for the horizontal blur shader
+	watercolourShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, baseViewMatrix, orthoMatrix, renderTexture->getShaderResourceView());
+
+	// Render using the horizontal blur shader
+	watercolourShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
+
+	// Re-enable the Z buffer
+	renderer->setZBuffer(true);
+
+
+	// Reset the render target back to the original back buffer and not the render to texture anymore.
+	renderer->setBackBufferRenderTarget();
+}
+
+void App1::ComparisonPass()
+{
+	// Set the comparison texture as the render target
+	comparisonTexture->setRenderTarget(renderer->getDeviceContext());
+	comparisonTexture->clearRenderTarget(renderer->getDeviceContext(), 0.0f, 0.5f, 0.5f, 1.0f);
+
+	// Get orthographic matrices for rendering
+	XMMATRIX worldMatrix = renderer->getWorldMatrix();
+	XMMATRIX orthoMatrix = comparisonTexture->getOrthoMatrix();
+	XMMATRIX orthoViewMatrix = camera->getOrthoViewMatrix();
+
+	// Disable the depth buffer for 2D rendering
+	renderer->setZBuffer(false);
+
+	// Send ortho mesh data to the rendering context
+	orthoMesh->sendData(renderer->getDeviceContext());
+
+	// Set shader parameters for the comparison shader
+	comparisonShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, renderTexture->getShaderResourceView(), watercolourTexture->getShaderResourceView(), comparisonSliderPosition);
+
+	// Render the comparison using the CompSlider shader
+	comparisonShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
+
+	// Re-enable the depth buffer
+	renderer->setZBuffer(true);
+
+	// Reset the render target back to the original back buffer
+	renderer->setBackBufferRenderTarget();
+}
+
+
+void App1::FinalPass()
+{
+	// Clear the scene. (default blue colour)
+	renderer->beginScene(0.39f, 0.58f, 0.92f, 1.0f);
+
+	// RENDER THE RENDER TEXTURE SCENE
+	// Requires 2D rendering and an ortho mesh.
+	renderer->setZBuffer(false);
+	XMMATRIX worldMatrix = renderer->getWorldMatrix();
+	XMMATRIX orthoMatrix = renderer->getOrthoMatrix();  // ortho matrix for 2D rendering
+	XMMATRIX orthoViewMatrix = camera->getOrthoViewMatrix();	// Default camera position for orthographic rendering
+
+	// Select the appropriate texture based on ImGui preferences
+	//auto* texture = greyscaleToggle ? greyscaleTexture->getShaderResourceView() : renderTexture->getShaderResourceView();
+	auto* texture = comparisonTexture->getShaderResourceView();
+	// Send mesh data once
+	orthoMesh->sendData(renderer->getDeviceContext());
+
+	// Set shader parameters and render with the selected texture
+	textureShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, texture);
+	textureShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
+
+	renderer->setZBuffer(true);
+
+	// Render GUI
+	GUI();
+
+	// Present the rendered scene to the screen.
+	renderer->endScene();
+}
+
+void App1::InitialiseShaders(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeight)
+{
+	textureShader = new TextureShader(renderer->getDevice(), hwnd);
+	greyscaleShader = new GreyScale(renderer->getDevice(), hwnd);
+	comparisonShader = new CompSlider(renderer->getDevice(), hwnd);
+	movementShader = new MovementShader(renderer->getDevice(), hwnd);
+	watercolourShader = new Watercolour(renderer->getDevice(), hwnd);
+	skyboxShader = new Skybox(renderer->getDevice(), hwnd);
+	oceanShader = new OceanShader(renderer->getDevice(), hwnd);
+}
+
+void App1::InitialiseMeshs(int screenWidth, int screenHeight)
+{
+	floor = new PlaneMesh(renderer->getDevice(), renderer->getDeviceContext());				// Create Floor Mesh 
+	ocean = new PlaneMesh(renderer->getDevice(), renderer->getDeviceContext());				// Create Ocean Mesh 
+	orthoMesh = new OrthoMesh(renderer->getDevice(), renderer->getDeviceContext(), screenWidth, screenHeight);	// Ortho mesh
+	sphere = new SphereMesh(renderer->getDevice(), renderer->getDeviceContext());  // Sphere mesh
+	cube = new CubeMesh(renderer->getDevice(), renderer->getDeviceContext());  // Cube mesh	
+	skybox = new CubeMesh(renderer->getDevice(), renderer->getDeviceContext()); // Skybox mesh
+
+	ship = new AModel(renderer->getDevice(), "res/models/ship.obj"); // https://sketchfab.com/3d-models/ship-g-4249f44c9f334432bd026a7dd7787058#download
+
+}
+
+void App1::InitialiseVariables()
+{
+	amplitude = 1;
+	frequency = 0.1f;
+	speed = 1;
+	numWaves = 1;
+	phases = 1;
+	transparency = 0.5f;
+	comparisonSliderPosition = 1.f;
+}
+
+void App1::InitialiseRenderTextures(int screenWidth, int screenHeight)
+{
+	renderTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
+	greyscaleTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
+	comparisonTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
+	watercolourTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
+}
+
+void App1::InitaliseLights()
+{
+
+	//Directional Light
+	directionalLight = new Light();
+	directionalLight->setDiffuseColour(1.0f, 1.0f, 1.0f, 1.0f);
+	directionalLight->setDirection(-1.0f, 0.0f, 0.0f);
+	directionalLight->setPosition(40.0f, 30.0f, 40.0f);
+	
+}
+
+void App1::LoadIntextures()
+{
+	textureMgr->loadTexture(L"grass", L"res/grass.jpg"); // Grass Texture
+	textureMgr->loadTexture(L"wood", L"res/wood.png"); // Wood Texture
+	textureMgr->loadTexture(L"water", L"res/water.jpg"); // water Texture
+	textureMgr->loadTexture(L"shipWood", L"res/shipWood.jpg"); // water Texture
+
+
+	textureMgr->loadTexture(L"skyboxTexture", L"res/Askymap.dds"); // CubeMap
+	skyboxTexture = textureMgr->getTexture(L"skyboxTexture");
+}
+
+void App1::GUI()
+{
+	// Force turn off unnecessary shader stages.
+	renderer->getDeviceContext()->GSSetShader(NULL, NULL, 0);
+	renderer->getDeviceContext()->HSSetShader(NULL, NULL, 0);
+	renderer->getDeviceContext()->DSSetShader(NULL, NULL, 0);
+
+	// Build UI
+	ImGui::Text("FPS: %.2f", timer->getFPS());
+	ImGui::Checkbox("Wireframe mode", &wireframeToggle);
+	if (ImGui::TreeNode("Post-Processing"))
+	{
+		ImGui::SliderFloat("Slider Position", &comparisonSliderPosition, 0.0f, 1.0f);
+		ImGui::Checkbox("Greyscale mode", &greyscaleToggle);
+		ImGui::TreePop();
+	}
+
+	// Ocean controller
+	if (ImGui::TreeNode("Ocean"))
+	{
+		// Speed of the waves
+		if (ImGui::TreeNode("Speed of Waves"))
+		{
+			ImGui::SliderFloat("Speed value", &speed, 0.1, 20);
+			ImGui::TreePop();
+		}
+
+		// Frequency of the waves
+		if (ImGui::TreeNode("Frequency of Waves"))
+		{
+			ImGui::SliderFloat("Frequency", &frequency, 0.1, 5);
+			ImGui::TreePop();
+		}
+
+		// Amplitude of the waves
+		if (ImGui::TreeNode("Amplitude of Waves"))
+		{
+			ImGui::SliderFloat("Amplitude", &amplitude, 0.1, 20);
+			ImGui::TreePop();
+		}
+		// Amplitude of the waves
+		if (ImGui::TreeNode("Number of Waves"))
+		{
+			ImGui::SliderFloat("WaveNumber", &numWaves, 0.1, 20);
+			ImGui::TreePop();
+		}
+		// Amplitude of the waves
+		if (ImGui::TreeNode("Phases"))
+		{
+			ImGui::SliderFloat("Phases", &phases, 0.1, 20);
+			ImGui::TreePop();
+		}
+		// Amplitude of the waves
+		if (ImGui::TreeNode("Wave Transparency"))
+		{
+			ImGui::SliderFloat("Transparency", &transparency, 0.1, 1);
+			ImGui::TreePop();
+		}
+
+		ImGui::TreePop();
+	}
+
+	// Render UI
+	ImGui::Render();
+	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+}
+
+
+
+
+
