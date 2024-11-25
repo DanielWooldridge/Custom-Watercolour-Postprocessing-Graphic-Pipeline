@@ -9,9 +9,11 @@
 #include "GreyScale.h"
 #include "CompSlider.h"
 #include "MovementShader.h"
-#include "Watercolour.h"
+#include "StructureTensor.h"
 #include "Skybox.h"
 #include "OceanShader.h"
+#include "HorizontalBlur.h"
+#include "VerticalBlur.h"
 
 class App1 : public BaseApplication
 {
@@ -27,7 +29,9 @@ protected:
 
 	void FirstPass();
 	void GreyScalePass();
-	void WatercolourPass();
+	void StructureTensorPass();
+	void HorizontalSmoothingPass();
+	void VerticalSmoothingPass();
 	void ComparisonPass();
 	void FinalPass();
 	bool Render();
@@ -47,9 +51,11 @@ private:
 	GreyScale* greyscaleShader;
 	CompSlider* comparisonShader;
 	MovementShader* movementShader;
-	Watercolour* watercolourShader;
+	Watercolour* structureTensorShader;
 	Skybox* skyboxShader;
 	OceanShader* oceanShader;
+	HorizontalBlur* horizontalBlurShader;
+	VerticalBlur* verticalBlurShader;
 
 	//Mesh Declaration
 	PlaneMesh* floor;
@@ -60,11 +66,14 @@ private:
 	CubeMesh* skybox;
 	AModel* ship;
 
+
 	//Render To Texture
 	RenderTexture* renderTexture;
 	RenderTexture* greyscaleTexture;
 	RenderTexture* comparisonTexture;
-	RenderTexture* watercolourTexture;
+	RenderTexture* structureTensorTexture;
+	RenderTexture* horizontalBlurTexture;
+	RenderTexture* verticalBlurTexture;
 
 	//Lighting
 	Light* directionalLight;

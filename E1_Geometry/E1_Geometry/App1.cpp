@@ -104,7 +104,11 @@ bool App1::Render()
 
 	GreyScalePass();
 
-	WatercolourPass();
+	StructureTensorPass();
+
+	HorizontalSmoothingPass();
+
+	VerticalSmoothingPass();
 
 	ComparisonPass();
 	
@@ -233,17 +237,17 @@ void App1::GreyScalePass()
 }
 
 
-void App1::WatercolourPass()
+void App1::StructureTensorPass()
 {
 	XMMATRIX worldMatrix, baseViewMatrix, orthoMatrix;
 
-	watercolourTexture->setRenderTarget(renderer->getDeviceContext());
-	watercolourTexture->clearRenderTarget(renderer->getDeviceContext(), 0.0f, 0.5f, 0.5f, 1.0f);
+	structureTensorTexture->setRenderTarget(renderer->getDeviceContext());
+	structureTensorTexture->clearRenderTarget(renderer->getDeviceContext(), 0.0f, 0.5f, 0.5f, 1.0f);
 
 	// Get the world matrix, orthographic view matrix, and orthographic projection matrix
 	worldMatrix = renderer->getWorldMatrix();
 	baseViewMatrix = camera->getOrthoViewMatrix();
-	orthoMatrix = watercolourTexture->getOrthoMatrix();
+	orthoMatrix = structureTensorTexture->getOrthoMatrix();
 
 	// Disable the depth (Z) buffer
 	renderer->setZBuffer(false);
@@ -252,16 +256,60 @@ void App1::WatercolourPass()
 	orthoMesh->sendData(renderer->getDeviceContext());
 
 	// Set shader parameters for the horizontal blur shader
-	watercolourShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, baseViewMatrix, orthoMatrix, renderTexture->getShaderResourceView());
+	structureTensorShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, baseViewMatrix, orthoMatrix, renderTexture->getShaderResourceView());
 
 	// Render using the horizontal blur shader
-	watercolourShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
+	structureTensorShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
 
 	// Re-enable the Z buffer
 	renderer->setZBuffer(true);
 
 
 	// Reset the render target back to the original back buffer and not the render to texture anymore.
+	renderer->setBackBufferRenderTarget();
+}
+
+void App1::HorizontalSmoothingPass()
+{
+	horizontalBlurTexture->setRenderTarget(renderer->getDeviceContext());
+	horizontalBlurTexture->clearRenderTarget(renderer->getDeviceContext(), 0.0f, 0.5f, 0.5f, 1.0f);
+
+	XMMATRIX worldMatrix = renderer->getWorldMatrix();
+	XMMATRIX orthoMatrix = horizontalBlurTexture->getOrthoMatrix();
+	XMMATRIX orthoViewMatrix = camera->getOrthoViewMatrix();
+
+	renderer->setZBuffer(false);
+
+	orthoMesh->sendData(renderer->getDeviceContext());
+	horizontalBlurShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, structureTensorTexture->getShaderResourceView());
+	horizontalBlurShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
+
+	renderer->setZBuffer(true);
+	renderer->setBackBufferRenderTarget();
+}
+
+void App1::VerticalSmoothingPass()
+{
+	// Set the vertical blur render target
+	verticalBlurTexture->setRenderTarget(renderer->getDeviceContext());
+	verticalBlurTexture->clearRenderTarget(renderer->getDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
+
+	XMMATRIX worldMatrix = renderer->getWorldMatrix();
+	XMMATRIX orthoMatrix = verticalBlurTexture->getOrthoMatrix();
+	XMMATRIX orthoViewMatrix = camera->getOrthoViewMatrix();
+
+	// Disable Z-buffer for 2D rendering
+	renderer->setZBuffer(false);
+
+	// Render the vertical blur
+	orthoMesh->sendData(renderer->getDeviceContext());
+	verticalBlurShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, horizontalBlurTexture->getShaderResourceView());  // Use horizontal blur as input
+	verticalBlurShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
+
+	// Re-enable Z-buffer
+	renderer->setZBuffer(true);
+
+	// Reset the render target
 	renderer->setBackBufferRenderTarget();
 }
 
@@ -283,7 +331,7 @@ void App1::ComparisonPass()
 	orthoMesh->sendData(renderer->getDeviceContext());
 
 	// Set shader parameters for the comparison shader
-	comparisonShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, renderTexture->getShaderResourceView(), watercolourTexture->getShaderResourceView(), comparisonSliderPosition);
+	comparisonShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, renderTexture->getShaderResourceView(), verticalBlurTexture->getShaderResourceView(), comparisonSliderPosition);
 
 	// Render the comparison using the CompSlider shader
 	comparisonShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
@@ -333,9 +381,11 @@ void App1::InitialiseShaders(HINSTANCE hinstance, HWND hwnd, int screenWidth, in
 	greyscaleShader = new GreyScale(renderer->getDevice(), hwnd);
 	comparisonShader = new CompSlider(renderer->getDevice(), hwnd);
 	movementShader = new MovementShader(renderer->getDevice(), hwnd);
-	watercolourShader = new Watercolour(renderer->getDevice(), hwnd);
+	structureTensorShader = new Watercolour(renderer->getDevice(), hwnd);
 	skyboxShader = new Skybox(renderer->getDevice(), hwnd);
 	oceanShader = new OceanShader(renderer->getDevice(), hwnd);
+	horizontalBlurShader = new HorizontalBlur(renderer->getDevice(), hwnd);
+	verticalBlurShader = new VerticalBlur(renderer->getDevice(), hwnd);
 }
 
 void App1::InitialiseMeshs(int screenWidth, int screenHeight)
@@ -367,7 +417,9 @@ void App1::InitialiseRenderTextures(int screenWidth, int screenHeight)
 	renderTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 	greyscaleTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 	comparisonTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
-	watercolourTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
+	structureTensorTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
+	horizontalBlurTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
+	verticalBlurTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 }
 
 void App1::InitaliseLights()
@@ -387,10 +439,24 @@ void App1::LoadIntextures()
 	textureMgr->loadTexture(L"wood", L"res/wood.png"); // Wood Texture
 	textureMgr->loadTexture(L"water", L"res/water.jpg"); // water Texture
 	textureMgr->loadTexture(L"shipWood", L"res/shipWood.jpg"); // water Texture
+	
+
 
 
 	textureMgr->loadTexture(L"skyboxTexture", L"res/Askymap.dds"); // CubeMap
 	skyboxTexture = textureMgr->getTexture(L"skyboxTexture");
+	//HRESULT hr = DirectX::CreateDDSTextureFromFile(
+	//	renderer->getDevice(),
+	//	renderer->getDeviceContext(),
+	//	L"res/Askymap.dds", // Path to the cubemap DDS file
+	//	nullptr,
+	//	&skyboxTexture
+	//);
+	//if (FAILED(hr)) {
+	//	// If loading fails, log the error or break here
+	//	OutputDebugString(L"Failed to load cubemap texture!\n");
+
+	//}
 }
 
 void App1::GUI()
