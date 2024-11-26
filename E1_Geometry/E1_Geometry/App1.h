@@ -14,6 +14,7 @@
 #include "OceanShader.h"
 #include "HorizontalBlur.h"
 #include "VerticalBlur.h"
+#include "BilateralFilter.h"
 
 class App1 : public BaseApplication
 {
@@ -32,6 +33,7 @@ protected:
 	void StructureTensorPass();
 	void HorizontalSmoothingPass();
 	void VerticalSmoothingPass();
+	void BilateralFilterPass(RenderTexture* input, RenderTexture* output, bool isHorizontal);
 	void ComparisonPass();
 	void FinalPass();
 	bool Render();
@@ -56,6 +58,7 @@ private:
 	OceanShader* oceanShader;
 	HorizontalBlur* horizontalBlurShader;
 	VerticalBlur* verticalBlurShader;
+	BilateralFilter* bilateralFilterShader;
 
 	//Mesh Declaration
 	PlaneMesh* floor;
@@ -74,6 +77,9 @@ private:
 	RenderTexture* structureTensorTexture;
 	RenderTexture* horizontalBlurTexture;
 	RenderTexture* verticalBlurTexture;
+	RenderTexture* bilateralFilterTexture;
+	RenderTexture* finalBilateralTexture;
+
 
 	//Lighting
 	Light* directionalLight;
@@ -90,6 +96,10 @@ private:
 	float phases;
 	float numWaves;
 	float transparency;
+
+	// Bilateral Filer Controls
+	float range;
+	float spatial;
 
 	//Overarching Vairables
 	float totalTime;

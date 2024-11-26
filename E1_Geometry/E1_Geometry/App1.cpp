@@ -110,6 +110,10 @@ bool App1::Render()
 
 	VerticalSmoothingPass();
 
+	
+	BilateralFilterPass(renderTexture, bilateralFilterTexture, true); 
+	BilateralFilterPass(bilateralFilterTexture, finalBilateralTexture, false); 
+
 	ComparisonPass();
 	
 	FinalPass();
@@ -140,20 +144,23 @@ void App1::FirstPass()
     renderer->getDeviceContext()->RSGetState(&originalRasterizerState);
     renderer->getDeviceContext()->RSSetState(skyboxRasterizerState);
 
+
+
     // Render Skybox
 	//XMMATRIX skyboxViewMatrix = XMMatrixIdentity(); // No translation, keep skybox stationary
 
 
-	XMMATRIX skyboxTranslationMatrix = XMMatrixTranslation(camera->getPosition().x, camera->getPosition().y, camera->getPosition().z);
-    //XMMATRIX skyboxTranslationMatrix = XMMatrixTranslation(25, 10, 25);
-    XMMATRIX skyboxScalingMatrix = XMMatrixScaling(100.0f, 100.0f, 100.0f);
-    XMMATRIX skyboxTransformedWorldMatrix = worldMatrix * skyboxScalingMatrix * skyboxTranslationMatrix;
+	//XMMATRIX skyboxTranslationMatrix = XMMatrixTranslation(camera->getPosition().x, camera->getPosition().y, camera->getPosition().z);
+ //   //XMMATRIX skyboxTranslationMatrix = XMMatrixTranslation(25, 10, 25);
+ //   XMMATRIX skyboxScalingMatrix = XMMatrixScaling(100.0f, 100.0f, 100.0f);
+ //   XMMATRIX skyboxTransformedWorldMatrix = worldMatrix * skyboxScalingMatrix * skyboxTranslationMatrix;
 
-    skybox->sendData(renderer->getDeviceContext());
-    skyboxShader->setShaderParameters(renderer->getDeviceContext(), skyboxTransformedWorldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"skyboxTexture"));
-    skyboxShader->render(renderer->getDeviceContext(), skybox->getIndexCount());
+ //   skybox->sendData(renderer->getDeviceContext());
+ //   skyboxShader->setShaderParameters(renderer->getDeviceContext(), skyboxTransformedWorldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"skyboxTexture"));
+ //   skyboxShader->render(renderer->getDeviceContext(), skybox->getIndexCount());
 
     // Reset rasterizer state back to original for the rest of the scene.
+
     renderer->getDeviceContext()->RSSetState(originalRasterizerState);
     if (originalRasterizerState) { originalRasterizerState->Release(); }
 
@@ -313,6 +320,26 @@ void App1::VerticalSmoothingPass()
 	renderer->setBackBufferRenderTarget();
 }
 
+void App1::BilateralFilterPass(RenderTexture* input, RenderTexture* output, bool isHorizontal)
+{
+	output->setRenderTarget(renderer->getDeviceContext());
+	output->clearRenderTarget(renderer->getDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
+
+	XMMATRIX worldMatrix = renderer->getWorldMatrix();
+	XMMATRIX orthoMatrix = output->getOrthoMatrix();
+	XMMATRIX orthoViewMatrix = camera->getOrthoViewMatrix();
+
+	renderer->setZBuffer(false);
+	orthoMesh->sendData(renderer->getDeviceContext());
+	bilateralFilterShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, input->getShaderResourceView(), verticalBlurTexture->getShaderResourceView(),
+		isHorizontal ? 0 : 1, spatial, range);
+	bilateralFilterShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
+	renderer->setZBuffer(true);
+	renderer->setBackBufferRenderTarget();
+
+
+}
+
 void App1::ComparisonPass()
 {
 	// Set the comparison texture as the render target
@@ -331,7 +358,7 @@ void App1::ComparisonPass()
 	orthoMesh->sendData(renderer->getDeviceContext());
 
 	// Set shader parameters for the comparison shader
-	comparisonShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, renderTexture->getShaderResourceView(), verticalBlurTexture->getShaderResourceView(), comparisonSliderPosition);
+	comparisonShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, renderTexture->getShaderResourceView(), finalBilateralTexture->getShaderResourceView(), comparisonSliderPosition);
 
 	// Render the comparison using the CompSlider shader
 	comparisonShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
@@ -386,6 +413,7 @@ void App1::InitialiseShaders(HINSTANCE hinstance, HWND hwnd, int screenWidth, in
 	oceanShader = new OceanShader(renderer->getDevice(), hwnd);
 	horizontalBlurShader = new HorizontalBlur(renderer->getDevice(), hwnd);
 	verticalBlurShader = new VerticalBlur(renderer->getDevice(), hwnd);
+	bilateralFilterShader = new BilateralFilter(renderer->getDevice(), hwnd);
 }
 
 void App1::InitialiseMeshs(int screenWidth, int screenHeight)
@@ -395,7 +423,7 @@ void App1::InitialiseMeshs(int screenWidth, int screenHeight)
 	orthoMesh = new OrthoMesh(renderer->getDevice(), renderer->getDeviceContext(), screenWidth, screenHeight);	// Ortho mesh
 	sphere = new SphereMesh(renderer->getDevice(), renderer->getDeviceContext());  // Sphere mesh
 	cube = new CubeMesh(renderer->getDevice(), renderer->getDeviceContext());  // Cube mesh	
-	skybox = new CubeMesh(renderer->getDevice(), renderer->getDeviceContext()); // Skybox mesh
+	skybox = new CubeMesh(renderer->getDevice(), renderer->getDeviceContext(), 1); // Skybox mesh
 
 	ship = new AModel(renderer->getDevice(), "res/models/ship.obj"); // https://sketchfab.com/3d-models/ship-g-4249f44c9f334432bd026a7dd7787058#download
 
@@ -410,6 +438,8 @@ void App1::InitialiseVariables()
 	phases = 1;
 	transparency = 0.5f;
 	comparisonSliderPosition = 1.f;
+	range = 0.1f; //maybe 0.2?
+	spatial = 5.0f; //maybe 7.0?
 }
 
 void App1::InitialiseRenderTextures(int screenWidth, int screenHeight)
@@ -420,6 +450,8 @@ void App1::InitialiseRenderTextures(int screenWidth, int screenHeight)
 	structureTensorTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 	horizontalBlurTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 	verticalBlurTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
+	bilateralFilterTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
+	finalBilateralTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 }
 
 void App1::InitaliseLights()
@@ -437,7 +469,7 @@ void App1::LoadIntextures()
 {
 	textureMgr->loadTexture(L"grass", L"res/grass.jpg"); // Grass Texture
 	textureMgr->loadTexture(L"wood", L"res/wood.png"); // Wood Texture
-	textureMgr->loadTexture(L"water", L"res/water.jpg"); // water Texture
+	textureMgr->loadTexture(L"water", L"res/water2.jpg"); // water Texture
 	textureMgr->loadTexture(L"shipWood", L"res/shipWood.jpg"); // water Texture
 	
 
@@ -448,15 +480,15 @@ void App1::LoadIntextures()
 	//HRESULT hr = DirectX::CreateDDSTextureFromFile(
 	//	renderer->getDevice(),
 	//	renderer->getDeviceContext(),
-	//	L"res/Askymap.dds", // Path to the cubemap DDS file
-	//	nullptr,
+	//	L"res/skymap.dds",
+	//	nullptr, // No resource is needed, only the shader resource view
 	//	&skyboxTexture
 	//);
 	//if (FAILED(hr)) {
-	//	// If loading fails, log the error or break here
 	//	OutputDebugString(L"Failed to load cubemap texture!\n");
-
 	//}
+
+
 }
 
 void App1::GUI()
@@ -473,6 +505,13 @@ void App1::GUI()
 	{
 		ImGui::SliderFloat("Slider Position", &comparisonSliderPosition, 0.0f, 1.0f);
 		ImGui::Checkbox("Greyscale mode", &greyscaleToggle);
+
+		if (ImGui::TreeNode("Bilateral Filter Settings")) {
+			ImGui::SliderFloat("Spatial Sigma", &spatial, 1.0f, 20.0f);  // Adjustable spatial range
+			ImGui::SliderFloat("Range Sigma", &range, 0.01f, 1.0f);      // Adjustable range sensitivity
+			ImGui::TreePop();
+		}
+
 		ImGui::TreePop();
 	}
 
