@@ -29,7 +29,7 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	InitialiseRenderTextures(screenWidth, screenHeight);
 
 	// Initialises Variables - GUI related
-	InitialiseVariables();
+	InitialiseVariables(screenWidth, screenHeight);
 
 	// Initialises Lights
 	InitaliseLights();
@@ -110,9 +110,11 @@ bool App1::Render()
 
 	VerticalSmoothingPass();
 
-	
 	BilateralFilterPass(renderTexture, bilateralFilterTexture, true); 
+
 	BilateralFilterPass(bilateralFilterTexture, finalBilateralTexture, false); 
+
+	DoGFilterPass();
 
 	ComparisonPass();
 	
@@ -140,9 +142,9 @@ void App1::FirstPass()
 	XMMATRIX projectionMatrix = renderer->getProjectionMatrix();
 
 	// Save the current rasterizer state and set the skybox-specific one.
-    ID3D11RasterizerState* originalRasterizerState;
-    renderer->getDeviceContext()->RSGetState(&originalRasterizerState);
-    renderer->getDeviceContext()->RSSetState(skyboxRasterizerState);
+    //ID3D11RasterizerState* originalRasterizerState;
+    //renderer->getDeviceContext()->RSGetState(&originalRasterizerState);
+    //renderer->getDeviceContext()->RSSetState(skyboxRasterizerState);
 
 
 
@@ -161,8 +163,8 @@ void App1::FirstPass()
 
     // Reset rasterizer state back to original for the rest of the scene.
 
-    renderer->getDeviceContext()->RSSetState(originalRasterizerState);
-    if (originalRasterizerState) { originalRasterizerState->Release(); }
+ /*   renderer->getDeviceContext()->RSSetState(originalRasterizerState);
+    if (originalRasterizerState) { originalRasterizerState->Release(); }*/
 
 
 	// Render Floor
@@ -338,6 +340,27 @@ void App1::BilateralFilterPass(RenderTexture* input, RenderTexture* output, bool
 	renderer->setBackBufferRenderTarget();
 
 
+
+}
+
+void App1::DoGFilterPass()
+{
+	dogFilterTexture->setRenderTarget(renderer->getDeviceContext());
+	dogFilterTexture->clearRenderTarget(renderer->getDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
+
+	XMMATRIX worldMatrix = renderer->getWorldMatrix();
+	XMMATRIX orthoMatrix = dogFilterTexture->getOrthoMatrix();
+	XMMATRIX orthoViewMatrix = camera->getOrthoViewMatrix();
+
+	renderer->setZBuffer(false);
+
+	orthoMesh->sendData(renderer->getDeviceContext());
+	dogFilterShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, finalBilateralTexture->getShaderResourceView(), verticalBlurTexture->getShaderResourceView(),
+	sensitivity, smoothing, tau, texelSize);
+	dogFilterShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
+
+	renderer->setZBuffer(true);
+	renderer->setBackBufferRenderTarget();
 }
 
 void App1::ComparisonPass()
@@ -357,8 +380,38 @@ void App1::ComparisonPass()
 	// Send ortho mesh data to the rendering context
 	orthoMesh->sendData(renderer->getDeviceContext());
 
+	// Determine which texture to pass based on user selection
+	ID3D11ShaderResourceView* selectedResourceView = nullptr;
+	switch (selectedTexture)
+	{
+	case 0: // Original Render Texture
+		selectedResourceView = renderTexture->getShaderResourceView();
+		break;
+	case 1: // Bilateral Filter Texture
+		selectedResourceView = bilateralFilterTexture->getShaderResourceView();
+		break;
+	case 2: // Final Bilateral Texture
+		selectedResourceView = finalBilateralTexture->getShaderResourceView();
+		break;
+	case 3: // structure Tensor Texture
+		selectedResourceView = structureTensorTexture->getShaderResourceView();
+		break;
+	case 4: // smoothed flow map Texture
+		selectedResourceView = verticalBlurTexture->getShaderResourceView();
+		break;
+	case 5: //smoothed structure tensor Horizontally
+		selectedResourceView = horizontalBlurTexture->getShaderResourceView();
+		break;
+	case 6: //smoothed structure tensor Horizontally
+		selectedResourceView = dogFilterTexture->getShaderResourceView();
+		break;
+	default:
+		selectedResourceView = renderTexture->getShaderResourceView();
+		break;
+	}
+
 	// Set shader parameters for the comparison shader
-	comparisonShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, renderTexture->getShaderResourceView(), finalBilateralTexture->getShaderResourceView(), comparisonSliderPosition);
+	comparisonShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, renderTexture->getShaderResourceView(), selectedResourceView, comparisonSliderPosition);
 
 	// Render the comparison using the CompSlider shader
 	comparisonShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
@@ -369,6 +422,7 @@ void App1::ComparisonPass()
 	// Reset the render target back to the original back buffer
 	renderer->setBackBufferRenderTarget();
 }
+
 
 
 void App1::FinalPass()
@@ -414,6 +468,7 @@ void App1::InitialiseShaders(HINSTANCE hinstance, HWND hwnd, int screenWidth, in
 	horizontalBlurShader = new HorizontalBlur(renderer->getDevice(), hwnd);
 	verticalBlurShader = new VerticalBlur(renderer->getDevice(), hwnd);
 	bilateralFilterShader = new BilateralFilter(renderer->getDevice(), hwnd);
+	dogFilterShader = new DifferenceOfGuassian(renderer->getDevice(), hwnd);
 }
 
 void App1::InitialiseMeshs(int screenWidth, int screenHeight)
@@ -429,17 +484,24 @@ void App1::InitialiseMeshs(int screenWidth, int screenHeight)
 
 }
 
-void App1::InitialiseVariables()
+void App1::InitialiseVariables(int screenWidth, int screenHeight)
 {
 	amplitude = 1;
 	frequency = 0.1f;
 	speed = 1;
 	numWaves = 1;
 	phases = 1;
-	transparency = 0.5f;
+	transparency = 1.0f;
+
 	comparisonSliderPosition = 1.f;
+
 	range = 0.1f; //maybe 0.2?
 	spatial = 5.0f; //maybe 7.0?
+
+	sensitivity = 5.6f;
+	smoothing = 0.6f;
+	tau = 1;
+	texelSize = XMFLOAT2(1.0f / screenWidth, 1.0f / screenHeight);
 }
 
 void App1::InitialiseRenderTextures(int screenWidth, int screenHeight)
@@ -452,6 +514,7 @@ void App1::InitialiseRenderTextures(int screenWidth, int screenHeight)
 	verticalBlurTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 	bilateralFilterTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 	finalBilateralTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
+	dogFilterTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 }
 
 void App1::InitaliseLights()
@@ -468,7 +531,7 @@ void App1::InitaliseLights()
 void App1::LoadIntextures()
 {
 	textureMgr->loadTexture(L"grass", L"res/grass.jpg"); // Grass Texture
-	textureMgr->loadTexture(L"wood", L"res/wood.png"); // Wood Texture
+	textureMgr->loadTexture(L"wood", L"res/sand.jpg"); // Wood Texture
 	textureMgr->loadTexture(L"water", L"res/water2.jpg"); // water Texture
 	textureMgr->loadTexture(L"shipWood", L"res/shipWood.jpg"); // water Texture
 	
@@ -504,16 +567,32 @@ void App1::GUI()
 	if (ImGui::TreeNode("Post-Processing"))
 	{
 		ImGui::SliderFloat("Slider Position", &comparisonSliderPosition, 0.0f, 1.0f);
-		ImGui::Checkbox("Greyscale mode", &greyscaleToggle);
+
+		if (ImGui::TreeNode("Texture Selection"))
+		{
+			const char* textureOptions[] = { "Original Scene", "Bilateral Filter Texture", "Final Bilateral Texture", "Structure Tensor Texture", "Smoothed Flow Map Texture", "Smooth Structure Tensor (Horiz)", "DoG Filter"};
+			ImGui::Combo("Output Texture", &selectedTexture, textureOptions, IM_ARRAYSIZE(textureOptions));
+			ImGui::TreePop();
+		}
+
+		//ImGui::Checkbox("Greyscale mode", &greyscaleToggle);
 
 		if (ImGui::TreeNode("Bilateral Filter Settings")) {
-			ImGui::SliderFloat("Spatial Sigma", &spatial, 1.0f, 20.0f);  // Adjustable spatial range
-			ImGui::SliderFloat("Range Sigma", &range, 0.01f, 1.0f);      // Adjustable range sensitivity
+			ImGui::SliderFloat("Spatial Sigma", &spatial, 1.0f, 20.0f);  
+			ImGui::SliderFloat("Range Sigma", &range, 0.01f, 1.0f);     
+			ImGui::TreePop();
+		}
+		if (ImGui::TreeNode("DoG Filter Settings")) {
+			ImGui::SliderFloat("Edge Sensitivity", &spatial, 1.0f, 20.0f);  // Adjust spatial sigma
+			ImGui::SliderFloat("Smoothing", &range, 0.01f, 5.0f);           // Adjust range sigma
+			ImGui::SliderFloat("Edge Threshold (tau)", &tau, 0.0f, 2.0f);             // Adjust tau
 			ImGui::TreePop();
 		}
 
 		ImGui::TreePop();
 	}
+
+	
 
 	// Ocean controller
 	if (ImGui::TreeNode("Ocean"))

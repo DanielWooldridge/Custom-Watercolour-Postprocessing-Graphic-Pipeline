@@ -44,10 +44,8 @@ float4 main(InputType input) : SV_TARGET {
     // Define kernel radius (range of sampling)
     float kernelRadius = 2.0 * spatial;
 
-    #define MAX_KERNEL_RADIUS 10
-
     // Bilateral filtering loop
-    for (int i = 1; i <= MAX_KERNEL_RADIUS; i++) {
+    for (int i = 1; i <= kernelRadius; i++) {
 
         float offset = i * stepLength;
 

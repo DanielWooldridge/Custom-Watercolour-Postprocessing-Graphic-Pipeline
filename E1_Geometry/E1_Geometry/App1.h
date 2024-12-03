@@ -15,6 +15,7 @@
 #include "HorizontalBlur.h"
 #include "VerticalBlur.h"
 #include "BilateralFilter.h"
+#include "DifferenceOfGuassian.h"
 
 class App1 : public BaseApplication
 {
@@ -34,6 +35,7 @@ protected:
 	void HorizontalSmoothingPass();
 	void VerticalSmoothingPass();
 	void BilateralFilterPass(RenderTexture* input, RenderTexture* output, bool isHorizontal);
+	void DoGFilterPass();
 	void ComparisonPass();
 	void FinalPass();
 	bool Render();
@@ -42,7 +44,7 @@ protected:
 	void InitialiseShaders(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeight);
 	void LoadIntextures();
 	void InitialiseMeshs(int screenWidth, int screenHeight);
-	void InitialiseVariables();
+	void InitialiseVariables(int screenWidth, int screenHeight);
 	void InitialiseRenderTextures(int screenWidth, int screenHeight);
 	void InitaliseLights();
 
@@ -59,6 +61,7 @@ private:
 	HorizontalBlur* horizontalBlurShader;
 	VerticalBlur* verticalBlurShader;
 	BilateralFilter* bilateralFilterShader;
+	DifferenceOfGuassian* dogFilterShader;
 
 	//Mesh Declaration
 	PlaneMesh* floor;
@@ -79,6 +82,7 @@ private:
 	RenderTexture* verticalBlurTexture;
 	RenderTexture* bilateralFilterTexture;
 	RenderTexture* finalBilateralTexture;
+	RenderTexture* dogFilterTexture;
 
 
 	//Lighting
@@ -88,6 +92,8 @@ private:
 	//GUI Variable Declaration
 	bool greyscaleToggle;
 	float comparisonSliderPosition;
+	int selectedTexture = 0; 
+
 
 	// Ocean Controls
 	float amplitude;
@@ -100,6 +106,12 @@ private:
 	// Bilateral Filer Controls
 	float range;
 	float spatial;
+
+	// Dog Controls
+	float sensitivity;
+	float smoothing;
+	float tau;
+	XMFLOAT2 texelSize;
 
 	//Overarching Vairables
 	float totalTime;
