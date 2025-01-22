@@ -36,6 +36,7 @@ protected:
 	void VerticalSmoothingPass();
 	void BilateralFilterPass(RenderTexture* input, RenderTexture* output, bool isHorizontal);
 	void DoGFilterPass();
+	void FlowCurvePass();
 	void ComparisonPass();
 	void FinalPass();
 	bool Render();
@@ -83,6 +84,7 @@ private:
 	RenderTexture* bilateralFilterTexture;
 	RenderTexture* finalBilateralTexture;
 	RenderTexture* dogFilterTexture;
+	RenderTexture* flowCurveTexture;
 
 
 	//Lighting
@@ -112,6 +114,12 @@ private:
 	float smoothing;
 	float tau;
 	XMFLOAT2 texelSize;
+
+	// Flow Curve Controls
+	XMFLOAT2 currentPosition;
+	XMFLOAT2 previousTan;
+	float totLength;
+	float curLength;
 
 	//Overarching Vairables
 	float totalTime;

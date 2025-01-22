@@ -363,6 +363,24 @@ void App1::DoGFilterPass()
 	renderer->setBackBufferRenderTarget();
 }
 
+void App1::FlowCurvePass()
+{
+
+	flowCurveTexture->setRenderTarget(renderer->getDeviceContext());
+	flowCurveTexture->clearRenderTarget(renderer->getDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
+
+	XMMATRIX worldMatrix = renderer->getWorldMatrix();
+	XMMATRIX orthoMatrix = flowCurveTexture->getOrthoMatrix();
+	XMMATRIX orthoViewMatrix = camera->getOrthoViewMatrix();
+
+	renderer->setZBuffer(false);
+
+	// Shader Call here...
+
+	renderer->setZBuffer(true);
+	renderer->setBackBufferRenderTarget();
+}
+
 void App1::ComparisonPass()
 {
 	// Set the comparison texture as the render target

@@ -168,6 +168,7 @@
     <ClCompile Include="BilateralFilter.cpp" />
     <ClCompile Include="CompSlider.cpp" />
     <ClCompile Include="DifferenceOfGuassian.cpp" />
+    <ClCompile Include="FlowCurve.cpp" />
     <ClCompile Include="GreyScale.cpp" />
     <ClCompile Include="HorizontalBlur.cpp" />
     <ClCompile Include="MovementShader.cpp" />
@@ -184,6 +185,7 @@
     <ClInclude Include="BilateralFilter.h" />
     <ClInclude Include="CompSlider.h" />
     <ClInclude Include="DifferenceOfGuassian.h" />
+    <ClInclude Include="FlowCurve.h" />
     <ClInclude Include="GreyScale.h" />
     <ClInclude Include="HorizontalBlur.h" />
     <ClInclude Include="MovementShader.h" />
@@ -231,6 +233,18 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
     <FxCompile Include="dogfiltering_vs.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="flowcurve_ps.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="flowcurve_vs.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
