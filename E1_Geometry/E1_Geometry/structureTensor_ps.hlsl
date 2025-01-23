@@ -11,7 +11,7 @@ float4 main(InputType input) : SV_TARGET {
     float2 uv = input.tex;
 
     // Compute gradients (Sobel-like filter)
-    float2 texelSize = float2(1.0 / 1920.0, 1.0 / 1080.0); // Replace with actual resolution
+    float2 texelSize = float2(1.0 / 1920.0, 1.0 / 1080.0); // We can just sample the Texture
 
     // Gradient in X direction
     float3 u = -1.0 * shaderTexture.Sample(sampleType, uv + texelSize * float2(-1, -1)).rgb +
@@ -30,9 +30,9 @@ float4 main(InputType input) : SV_TARGET {
                 1.0 * shaderTexture.Sample(sampleType, uv + texelSize * float2( 1,  1)).rgb;
 
     // Compute structure tensor components
-    float E = dot(u, u); // I_x^2
-    float F = dot(u, v); // I_x * I_y
-    float G = dot(v, v); // I_y^2
+    float E = dot(u, u); // I_x^2 - Gradient Magnitude in X
+    float F = dot(u, v); // I_x * I_y - Cross Product
+    float G = dot(v, v); // I_y^2 - Gradient Magnitude in Y
 
     return float4(E, F, G, 1.0); // Store as RGBA (E, F, G, unused)
 }
