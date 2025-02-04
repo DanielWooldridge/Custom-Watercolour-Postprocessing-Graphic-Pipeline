@@ -18,7 +18,7 @@ float4 main(InputType input) : SV_TARGET
     float3 smoothedTensor = float3(0.0, 0.0, 0.0);
 
     // Texel size for horizontal smoothing
-    float2 texelSize = float2(1.0 / 1920.0, 0.0); // Horizontal only
+    float2 texelSize = float2(1.0 / 1920.0, 0.0); // Horizontal only - Can just Sample and get .x
 
     // Apply Gaussian weights to sample neighboring texels
     smoothedTensor += img.Sample(sampleType, uv + texelSize * float2(-2, 0)).xyz * weights[0];

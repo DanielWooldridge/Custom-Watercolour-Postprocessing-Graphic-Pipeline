@@ -38,7 +38,9 @@ float4 main(InputType input) : SV_TARGET
     // Define the kernel half-width
     float halfWidth = 2.0 * smoothing;
 
+ 
     // Perform filtering in 1D along the tangent direction
+    //[unroll(62)]
     for (float d = -halfWidth; d <= halfWidth; d += 1.0)
     {
        float2 kernel = float2(exp(-d * d / twoSigmaESquared), exp(-d * d / twoSigmaRSquared));
