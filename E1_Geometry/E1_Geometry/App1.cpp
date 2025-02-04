@@ -141,14 +141,14 @@ void App1::FirstPass()
 	XMMATRIX viewMatrix = camera->getViewMatrix();
 	XMMATRIX projectionMatrix = renderer->getProjectionMatrix();
 
-	// Save the current rasterizer state and set the skybox-specific one.
-    //ID3D11RasterizerState* originalRasterizerState;
-    //renderer->getDeviceContext()->RSGetState(&originalRasterizerState);
-    //renderer->getDeviceContext()->RSSetState(skyboxRasterizerState);
+	//// Save the current rasterizer state and set the skybox-specific one.
+ //   ID3D11RasterizerState* originalRasterizerState;
+ //   renderer->getDeviceContext()->RSGetState(&originalRasterizerState);
+ //   renderer->getDeviceContext()->RSSetState(skyboxRasterizerState);
 
 
 
-    // Render Skybox
+ //   // Render Skybox
 	//XMMATRIX skyboxViewMatrix = XMMatrixIdentity(); // No translation, keep skybox stationary
 
 
@@ -161,10 +161,10 @@ void App1::FirstPass()
  //   skyboxShader->setShaderParameters(renderer->getDeviceContext(), skyboxTransformedWorldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"skyboxTexture"));
  //   skyboxShader->render(renderer->getDeviceContext(), skybox->getIndexCount());
 
-    // Reset rasterizer state back to original for the rest of the scene.
+ //    //Reset rasterizer state back to original for the rest of the scene.
 
- /*   renderer->getDeviceContext()->RSSetState(originalRasterizerState);
-    if (originalRasterizerState) { originalRasterizerState->Release(); }*/
+ //   renderer->getDeviceContext()->RSSetState(originalRasterizerState);
+ //   if (originalRasterizerState) { originalRasterizerState->Release(); }
 
 
 	// Render Floor
@@ -363,6 +363,7 @@ void App1::DoGFilterPass()
 	renderer->setBackBufferRenderTarget();
 }
 
+// WE CAN ADD THIS INTO THE SECOND DOG PASS FOR OPTIMIZATION?
 void App1::FlowCurvePass()
 {
 

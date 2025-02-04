@@ -1,4 +1,4 @@
-Texture2D shaderTexture : register(t0);
+Texture2D flowmap : register(t0);
 SamplerState sampleType : register(s0);
 
 cbuffer cFlowBuffer
@@ -18,19 +18,25 @@ struct InputType
     float3 normal : NORMAL;
 };
 
-void step() // smooth step function, can i combine this all into one dog shader??? using the esisting smooth step
-{
-    
-    
-}
+
 
 float4 main(InputType input) : SV_TARGET
 {
     
-    // Mathematical calculation = C(t) = C0 + DeltaC . f(t)
+    float2 tangent = flowmap.Sample(sampleType, input.tex).xy;
+
+    if (dot(tangent, pTan) < 0.0)
+    {
+        tangent = -tangent;
+        pTan = tangent;
+    }
     
+    cLength = (abs(tangent.x) > abs(tangent.y)) ?
+            abs((frac(pTan.x) - 0.5 - sign(tangent.x)) / tangent.x) :
+            abs((frac(pTan.y) - 0.5 - sign(tangent.y)) / tangent.y);
     
-    
+    pTan += tangent * cLength / flowmap.GetDimensions(0, 0); // change this;
+    tLength += cLength;
     
     return float4(0, 0, 0, 1);
 }
