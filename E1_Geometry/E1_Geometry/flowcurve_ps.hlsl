@@ -28,8 +28,8 @@ float4 main(InputType input) : SV_TARGET
     if (dot(tangent, pTan) < 0.0)
     {
         tangent = -tangent;
-        pTan = tangent;
-    }
+       // pTan = tangent; FIX THIS: ERROR X3025 (is implicitly constant and cannot be modified)
+    } //https://www.gamedev.net/forums/topic/628844-error-x3025-and-d3dxshader-enable-backwards-compatibility/
     
     cLength = (abs(tangent.x) > abs(tangent.y)) ?
             abs((frac(pTan.x) - 0.5 - sign(tangent.x)) / tangent.x) :
