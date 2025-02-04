@@ -376,7 +376,6 @@ void App1::FlowCurvePass()
 
 	renderer->setZBuffer(false);
 
-	// Shader Call here...
 
 	renderer->setZBuffer(true);
 	renderer->setBackBufferRenderTarget();

@@ -1,15 +1,14 @@
 Texture2D flowmap : register(t0);
 SamplerState sampleType : register(s0);
 
-cbuffer cFlowBuffer
+cbuffer cFlowBuffer : register(b0)
 {
     float2 cpos;
-    float2 pTan;
+    float2 pTan; // This is constant and cannot be modified
     float tLength;
     float cLength;
     float pad[2];
 };
-
 
 struct InputType
 {
@@ -18,25 +17,27 @@ struct InputType
     float3 normal : NORMAL;
 };
 
-
-
 float4 main(InputType input) : SV_TARGET
 {
-    
     float2 tangent = flowmap.Sample(sampleType, input.tex).xy;
+    float2 pTanL = pTan; 
 
-    if (dot(tangent, pTan) < 0.0)
+    if (dot(tangent, pTanL) < 0.0)
     {
         tangent = -tangent;
-       // pTan = tangent; FIX THIS: ERROR X3025 (is implicitly constant and cannot be modified)
-    } //https://www.gamedev.net/forums/topic/628844-error-x3025-and-d3dxshader-enable-backwards-compatibility/
+        pTanL = tangent; 
+    }
     
-    cLength = (abs(tangent.x) > abs(tangent.y)) ?
-            abs((frac(pTan.x) - 0.5 - sign(tangent.x)) / tangent.x) :
-            abs((frac(pTan.y) - 0.5 - sign(tangent.y)) / tangent.y);
+    float cLengthL = (abs(tangent.x) > abs(tangent.y)) ?
+        abs((frac(pTanL.x) - 0.5 - sign(tangent.x)) / tangent.x) :
+        abs((frac(pTanL.y) - 0.5 - sign(tangent.y)) / tangent.y);
     
-    pTan += tangent * cLength / flowmap.GetDimensions(0, 0); // change this;
-    tLength += cLength;
+    // Get texture dimensions
+    uint width, height;
+    flowmap.GetDimensions(width, height);
+    
+    pTanL += tangent * cLengthL / float2(width, height);
+    float tLengthL = tLength + cLengthL; 
     
     return float4(0, 0, 0, 1);
 }
