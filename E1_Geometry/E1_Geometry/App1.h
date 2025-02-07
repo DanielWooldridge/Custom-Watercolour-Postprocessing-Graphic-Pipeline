@@ -16,6 +16,7 @@
 #include "VerticalBlur.h"
 #include "BilateralFilter.h"
 #include "DifferenceOfGuassian.h"
+#include "FlowCurve.h"
 
 class App1 : public BaseApplication
 {
@@ -63,6 +64,7 @@ private:
 	VerticalBlur* verticalBlurShader;
 	BilateralFilter* bilateralFilterShader;
 	DifferenceOfGuassian* dogFilterShader;
+	FlowCurve* flowCurveShader;
 
 	//Mesh Declaration
 	PlaneMesh* floor;

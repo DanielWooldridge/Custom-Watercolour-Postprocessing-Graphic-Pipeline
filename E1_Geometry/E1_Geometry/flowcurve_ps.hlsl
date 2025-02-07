@@ -21,6 +21,8 @@ float4 main(InputType input) : SV_TARGET
 {
     float2 tangent = flowmap.Sample(sampleType, input.tex).xy;
     float2 pTanL = pTan; 
+    tangent = normalize(tangent);
+
 
     if (dot(tangent, pTanL) < 0.0)
     {
@@ -39,5 +41,6 @@ float4 main(InputType input) : SV_TARGET
     pTanL += tangent * cLengthL / float2(width, height);
     float tLengthL = tLength + cLengthL; 
     
-    return float4(0, 0, 0, 1);
+    return float4(pTanL.x, pTanL.y, 0.0f, 1.0f);
+
 }

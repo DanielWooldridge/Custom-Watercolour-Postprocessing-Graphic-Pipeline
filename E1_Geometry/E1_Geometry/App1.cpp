@@ -116,6 +116,8 @@ bool App1::Render()
 
 	DoGFilterPass();
 
+	FlowCurvePass();
+
 	ComparisonPass();
 	
 	FinalPass();
@@ -376,6 +378,9 @@ void App1::FlowCurvePass()
 
 	renderer->setZBuffer(false);
 
+	orthoMesh->sendData(renderer->getDeviceContext());
+	flowCurveShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, verticalBlurTexture->getShaderResourceView(), currentPosition, previousTan, totLength, curLength);
+	flowCurveShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
 
 	renderer->setZBuffer(true);
 	renderer->setBackBufferRenderTarget();
@@ -422,6 +427,9 @@ void App1::ComparisonPass()
 		break;
 	case 6: //smoothed structure tensor Horizontally
 		selectedResourceView = dogFilterTexture->getShaderResourceView();
+		break;
+	case 7: // Flow Curve Texture
+		selectedResourceView = flowCurveTexture->getShaderResourceView();
 		break;
 	default:
 		selectedResourceView = renderTexture->getShaderResourceView();
@@ -487,6 +495,7 @@ void App1::InitialiseShaders(HINSTANCE hinstance, HWND hwnd, int screenWidth, in
 	verticalBlurShader = new VerticalBlur(renderer->getDevice(), hwnd);
 	bilateralFilterShader = new BilateralFilter(renderer->getDevice(), hwnd);
 	dogFilterShader = new DifferenceOfGuassian(renderer->getDevice(), hwnd);
+	flowCurveShader = new FlowCurve(renderer->getDevice(), hwnd);
 }
 
 void App1::InitialiseMeshs(int screenWidth, int screenHeight)
@@ -520,6 +529,11 @@ void App1::InitialiseVariables(int screenWidth, int screenHeight)
 	smoothing = 0.6f;
 	tau = 1;
 	texelSize = XMFLOAT2(1.0f / screenWidth, 1.0f / screenHeight);
+
+	currentPosition = XMFLOAT2(0.5f, 0.5f);
+	previousTan = XMFLOAT2(1.0f, 0.0f);
+	totLength = 0.0f;
+	curLength = 1.0f;
 }
 
 void App1::InitialiseRenderTextures(int screenWidth, int screenHeight)
@@ -533,6 +547,7 @@ void App1::InitialiseRenderTextures(int screenWidth, int screenHeight)
 	bilateralFilterTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 	finalBilateralTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 	dogFilterTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
+	flowCurveTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 }
 
 void App1::InitaliseLights()
@@ -588,7 +603,7 @@ void App1::GUI()
 
 		if (ImGui::TreeNode("Texture Selection"))
 		{
-			const char* textureOptions[] = { "Original Scene", "Bilateral Filter Texture", "Final Bilateral Texture", "Structure Tensor Texture", "Smoothed Flow Map Texture", "Smooth Structure Tensor (Horiz)", "DoG Filter"};
+			const char* textureOptions[] = { "Original Scene", "Bilateral Filter Texture", "Final Bilateral Texture", "Structure Tensor Texture", "Smoothed Flow Map Texture", "Smooth Structure Tensor (Horiz)", "DoG Filter", "Flow Curve Calc"};
 			ImGui::Combo("Output Texture", &selectedTexture, textureOptions, IM_ARRAYSIZE(textureOptions));
 			ImGui::TreePop();
 		}
@@ -604,6 +619,15 @@ void App1::GUI()
 			ImGui::SliderFloat("Edge Sensitivity", &spatial, 1.0f, 20.0f);  // Adjust spatial sigma
 			ImGui::SliderFloat("Smoothing", &range, 0.01f, 5.0f);           // Adjust range sigma
 			ImGui::SliderFloat("Edge Threshold (tau)", &tau, 0.0f, 2.0f);             // Adjust tau
+			ImGui::TreePop();
+		}
+		if (ImGui::TreeNode("Flow Curve Settings"))
+		{
+			ImGui::SliderFloat2("Start Position", &currentPosition.x, 0.0f, 1.0f);
+			ImGui::SliderFloat2("Initial Tangent", &previousTan.x, -1.0f, 1.0f);
+			ImGui::SliderFloat("Step Length", &curLength, 0.01f, 10.0f);
+			ImGui::SliderFloat("Total Traversal Length", &totLength, 0.0f, 100.0f);
+
 			ImGui::TreePop();
 		}
 
