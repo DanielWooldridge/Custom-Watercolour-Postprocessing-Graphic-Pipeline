@@ -379,11 +379,11 @@ void App1::FlowCurvePass()
 	renderer->setZBuffer(false);
 
 	orthoMesh->sendData(renderer->getDeviceContext());
+	//std::cout << "Previous Tan: (" << previousTan.x << ", " << previousTan.y << ")\n";
 	flowCurveShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, verticalBlurTexture->getShaderResourceView(), currentPosition, previousTan, totLength, curLength);
 	flowCurveShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
 
 	renderer->setZBuffer(true);
-	renderer->setBackBufferRenderTarget();
 }
 
 void App1::ComparisonPass()
@@ -531,7 +531,7 @@ void App1::InitialiseVariables(int screenWidth, int screenHeight)
 	texelSize = XMFLOAT2(1.0f / screenWidth, 1.0f / screenHeight);
 
 	currentPosition = XMFLOAT2(0.5f, 0.5f);
-	previousTan = XMFLOAT2(1.0f, 0.0f);
+	previousTan = XMFLOAT2(1.0f, -0.3f);
 	totLength = 0.0f;
 	curLength = 1.0f;
 }

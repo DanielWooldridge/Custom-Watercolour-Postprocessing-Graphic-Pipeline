@@ -99,7 +99,7 @@ void FlowCurve::setShaderParameters(ID3D11DeviceContext* deviceContext, const XM
 	flowptr->tLength = totLength;
 	flowptr->cLength = curLength;
 	deviceContext->Unmap(fCurveBuffer, 0);
-	deviceContext->PSSetConstantBuffers(1, 1, &fCurveBuffer);
+	deviceContext->PSSetConstantBuffers(0, 1, &fCurveBuffer);
 	deviceContext->PSSetSamplers(0, 1, &sampleState);
 }
 
