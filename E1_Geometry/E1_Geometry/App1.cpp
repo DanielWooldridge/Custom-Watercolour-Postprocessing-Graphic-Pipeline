@@ -118,6 +118,8 @@ bool App1::Render()
 
 	FlowCurvePass();
 
+	DoGFlowPass();
+
 	ComparisonPass();
 	
 	FinalPass();
@@ -386,6 +388,28 @@ void App1::FlowCurvePass()
 	renderer->setZBuffer(true);
 }
 
+void App1::DoGFlowPass()
+{
+	dogFlowTexture->setRenderTarget(renderer->getDeviceContext());
+	dogFlowTexture->clearRenderTarget(renderer->getDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
+
+	XMMATRIX worldMatrix = renderer->getWorldMatrix();
+	XMMATRIX orthoMatrix = dogFlowTexture->getOrthoMatrix();
+	XMMATRIX orthoViewMatrix = camera->getOrthoViewMatrix();
+
+	renderer->setZBuffer(false);
+
+	orthoMesh->sendData(renderer->getDeviceContext());
+	
+	dogFlowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, dogFilterTexture->getShaderResourceView(),  flowCurveTexture->getShaderResourceView(), // Flow Map Texture
+	dogFlowSmoothing, dogFlowThreshold);
+	dogFlowShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
+
+	renderer->setZBuffer(true);
+
+
+}
+
 void App1::ComparisonPass()
 {
 	// Set the comparison texture as the render target
@@ -430,6 +454,9 @@ void App1::ComparisonPass()
 		break;
 	case 7: // Flow Curve Texture
 		selectedResourceView = flowCurveTexture->getShaderResourceView();
+		break;
+	case 8: // DoG Flow Texture
+		selectedResourceView = dogFlowTexture->getShaderResourceView();
 		break;
 	default:
 		selectedResourceView = renderTexture->getShaderResourceView();
@@ -496,6 +523,7 @@ void App1::InitialiseShaders(HINSTANCE hinstance, HWND hwnd, int screenWidth, in
 	bilateralFilterShader = new BilateralFilter(renderer->getDevice(), hwnd);
 	dogFilterShader = new DifferenceOfGuassian(renderer->getDevice(), hwnd);
 	flowCurveShader = new FlowCurve(renderer->getDevice(), hwnd);
+	dogFlowShader = new DoG_via_FlowCurve(renderer->getDevice(), hwnd);
 }
 
 void App1::InitialiseMeshs(int screenWidth, int screenHeight)
@@ -534,6 +562,9 @@ void App1::InitialiseVariables(int screenWidth, int screenHeight)
 	previousTan = XMFLOAT2(1.0f, -0.3f);
 	totLength = 0.0f;
 	curLength = 1.0f;
+
+	dogFlowThreshold = 1.0f;
+	dogFlowSmoothing = 1.5f;
 }
 
 void App1::InitialiseRenderTextures(int screenWidth, int screenHeight)
@@ -548,6 +579,7 @@ void App1::InitialiseRenderTextures(int screenWidth, int screenHeight)
 	finalBilateralTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 	dogFilterTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 	flowCurveTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
+	dogFlowTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 }
 
 void App1::InitaliseLights()
@@ -603,7 +635,7 @@ void App1::GUI()
 
 		if (ImGui::TreeNode("Texture Selection"))
 		{
-			const char* textureOptions[] = { "Original Scene", "Bilateral Filter Texture", "Final Bilateral Texture", "Structure Tensor Texture", "Smoothed Flow Map Texture", "Smooth Structure Tensor (Horiz)", "DoG Filter", "Flow Curve Calc"};
+			const char* textureOptions[] = { "Original Scene", "Bilateral Filter Texture", "Final Bilateral Texture", "Structure Tensor Texture", "Smoothed Flow Map Texture", "Smooth Structure Tensor (Horiz)", "DoG Filter", "Flow Curve Calc", "Dog Flow Texture" };
 			ImGui::Combo("Output Texture", &selectedTexture, textureOptions, IM_ARRAYSIZE(textureOptions));
 			ImGui::TreePop();
 		}
@@ -630,7 +662,13 @@ void App1::GUI()
 
 			ImGui::TreePop();
 		}
+		if (ImGui::TreeNode("DoG Curve Settings"))
+		{
+			ImGui::SliderFloat("Smoothing", &dogFlowSmoothing, 0.0f, 5.0f);
+			ImGui::SliderFloat("Threshold", &dogFlowThreshold, -1.0f, 1.5f);
 
+			ImGui::TreePop();
+		}
 		ImGui::TreePop();
 	}
 

@@ -17,6 +17,7 @@
 #include "BilateralFilter.h"
 #include "DifferenceOfGuassian.h"
 #include "FlowCurve.h"
+#include "DoG_via_FlowCurve.h"
 
 class App1 : public BaseApplication
 {
@@ -38,6 +39,7 @@ protected:
 	void BilateralFilterPass(RenderTexture* input, RenderTexture* output, bool isHorizontal);
 	void DoGFilterPass();
 	void FlowCurvePass();
+	void DoGFlowPass();
 	void ComparisonPass();
 	void FinalPass();
 	bool Render();
@@ -65,6 +67,7 @@ private:
 	BilateralFilter* bilateralFilterShader;
 	DifferenceOfGuassian* dogFilterShader;
 	FlowCurve* flowCurveShader;
+	DoG_via_FlowCurve* dogFlowShader;
 
 	//Mesh Declaration
 	PlaneMesh* floor;
@@ -87,6 +90,7 @@ private:
 	RenderTexture* finalBilateralTexture;
 	RenderTexture* dogFilterTexture;
 	RenderTexture* flowCurveTexture;
+	RenderTexture* dogFlowTexture;
 
 
 	//Lighting
@@ -122,6 +126,10 @@ private:
 	XMFLOAT2 previousTan;
 	float totLength;
 	float curLength;
+
+	// dog flow Controls
+	float dogFlowSmoothing;
+	float dogFlowThreshold;
 
 	//Overarching Vairables
 	float totalTime;

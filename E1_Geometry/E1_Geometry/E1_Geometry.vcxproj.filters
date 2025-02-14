@@ -60,6 +60,9 @@
     <ClCompile Include="FlowCurve.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DoG_via_FlowCurve.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App1.h">
@@ -102,6 +105,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FlowCurve.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DoG_via_FlowCurve.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -176,6 +182,12 @@
       <Filter>Resource Files</Filter>
     </FxCompile>
     <FxCompile Include="flowcurve_ps.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="dogflow_ps.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="dogflow_vs.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
   </ItemGroup>

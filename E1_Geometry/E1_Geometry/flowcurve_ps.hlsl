@@ -23,7 +23,7 @@ float4 main(InputType input) : SV_TARGET
     float2 pTanL = pTan; 
     tangent = normalize(tangent);
 
-
+    // Flips tangent if needed
     if (dot(tangent, pTanL) < 0.0)
     {
         tangent = -tangent;
@@ -33,11 +33,13 @@ float4 main(InputType input) : SV_TARGET
     float safeX = max(abs(tangent.x), 0.001f); // Prevents very small numbers
     float safeY = max(abs(tangent.y), 0.001f);
 
+    // Compute step length depending on whether x or y is dominant
     float cLengthL = (abs(tangent.x) > abs(tangent.y)) ?
         abs((frac(pTanL.x) - 0.5 - sign(tangent.x)) / safeX) :
         abs((frac(pTanL.y) - 0.5 - sign(tangent.y)) / safeY);
 
-   pTanL = clamp(pTanL, -1.0f, 1.0f);
+    // Clamp to stop values from being out of bounds
+    pTanL = clamp(pTanL, -1.0f, 1.0f);
 
 
 
@@ -45,6 +47,7 @@ float4 main(InputType input) : SV_TARGET
     uint width, height;
     flowmap.GetDimensions(width, height);
     
+    // Move along the flow field
     pTanL += tangent * cLengthL / float2(width, height);
     float tLengthL = tLength + cLengthL; 
     
@@ -57,8 +60,8 @@ float4 main(InputType input) : SV_TARGET
 
    //return float4(cLengthL * 0.5f, 0, 0, 1);
 
-//cLengthL = cLengthL / (1.0 + cLengthL); // Keep values in range [0,1]
-//cLengthL = pow(cLengthL, 0.5); // Apply contrast enhancement
+//cLengthL = cLengthL / (1.0 + cLengthL); 
+//cLengthL = pow(cLengthL, 0.5); 
 //return float4(cLengthL, cLengthL, cLengthL, 1);
 
 
