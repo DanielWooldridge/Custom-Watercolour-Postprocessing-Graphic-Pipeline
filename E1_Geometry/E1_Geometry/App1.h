@@ -18,6 +18,7 @@
 #include "DifferenceOfGuassian.h"
 #include "FlowCurve.h"
 #include "DoG_via_FlowCurve.h"
+#include "ColourQuantization.h"
 
 class App1 : public BaseApplication
 {
@@ -40,6 +41,7 @@ protected:
 	void DoGFilterPass();
 	void FlowCurvePass();
 	void DoGFlowPass();
+	void ColourQuantizationPass();
 	void ComparisonPass();
 	void FinalPass();
 	bool Render();
@@ -68,6 +70,7 @@ private:
 	DifferenceOfGuassian* dogFilterShader;
 	FlowCurve* flowCurveShader;
 	DoG_via_FlowCurve* dogFlowShader;
+	ColourQuantization* cqShader;
 
 	//Mesh Declaration
 	PlaneMesh* floor;
@@ -91,6 +94,7 @@ private:
 	RenderTexture* dogFilterTexture;
 	RenderTexture* flowCurveTexture;
 	RenderTexture* dogFlowTexture;
+	RenderTexture* colourQuantizationTexture;
 
 
 	//Lighting
@@ -130,6 +134,9 @@ private:
 	// dog flow Controls
 	float dogFlowSmoothing;
 	float dogFlowThreshold;
+
+	// Colour quantization controls
+	float transitionSmoothing;
 
 	//Overarching Vairables
 	float totalTime;
