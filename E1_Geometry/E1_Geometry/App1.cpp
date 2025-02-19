@@ -426,7 +426,7 @@ void App1::ColourQuantizationPass()
 
 	orthoMesh->sendData(renderer->getDeviceContext());
 
-	cqShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, renderTexture->getShaderResourceView(), transitionSmoothing);
+	cqShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, dogFlowTexture->getShaderResourceView(), transitionSmoothing);
 	cqShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
 
 	renderer->setZBuffer(true);
@@ -695,6 +695,12 @@ void App1::GUI()
 		{
 			ImGui::SliderFloat("Smoothing", &dogFlowSmoothing, 0.0f, 5.0f);
 			ImGui::SliderFloat("Threshold", &dogFlowThreshold, -1.0f, 1.5f);
+
+			ImGui::TreePop();
+		}
+		if (ImGui::TreeNode("Colour Quantization Settings"))
+		{
+			ImGui::SliderFloat("Smoothing", &transitionSmoothing, 0.0f, 5.0f);
 
 			ImGui::TreePop();
 		}
