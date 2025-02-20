@@ -426,7 +426,7 @@ void App1::ColourQuantizationPass()
 
 	orthoMesh->sendData(renderer->getDeviceContext());
 
-	cqShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, dogFlowTexture->getShaderResourceView(), transitionSmoothing);
+	cqShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, renderTexture->getShaderResourceView(), transitionSmoothing);
 	cqShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
 
 	renderer->setZBuffer(true);

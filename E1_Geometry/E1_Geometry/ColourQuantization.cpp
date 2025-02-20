@@ -96,5 +96,6 @@ void ColourQuantization::setShaderParameters(ID3D11DeviceContext* deviceContext,
 	cqptr->transitionSmoothing = transitionSmoothing;
 	deviceContext->Unmap(cqBuffer, 0);
 	deviceContext->PSSetConstantBuffers(0, 1, &cqBuffer);
+	deviceContext->PSSetShaderResources(0, 1, &inputTexture);
 	deviceContext->PSSetSamplers(0, 1, &sampleState);
 }
