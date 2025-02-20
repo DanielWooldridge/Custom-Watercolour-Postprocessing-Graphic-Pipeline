@@ -122,6 +122,8 @@ bool App1::Render()
 
 	ColourQuantizationPass();
 
+	CartoonRenderingPass();
+
 	ComparisonPass();
 	
 	FinalPass();
@@ -444,6 +446,8 @@ void App1::CartoonRenderingPass()
 	renderer->setZBuffer(false);
 
 	orthoMesh->sendData(renderer->getDeviceContext());
+	cartoonShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, dogFilterTexture->getShaderResourceView(), colourQuantizationTexture->getShaderResourceView());
+	cartoonShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
 
 	renderer->setZBuffer(true);
 }
@@ -498,6 +502,9 @@ void App1::ComparisonPass()
 		break;
 	case 9: // CQ Texture
 		selectedResourceView = colourQuantizationTexture->getShaderResourceView();
+		break;
+	case 10:
+		selectedResourceView = cartoonRenderTexture->getShaderResourceView();
 		break;
 	default:
 		selectedResourceView = renderTexture->getShaderResourceView();
@@ -566,6 +573,7 @@ void App1::InitialiseShaders(HINSTANCE hinstance, HWND hwnd, int screenWidth, in
 	flowCurveShader = new FlowCurve(renderer->getDevice(), hwnd);
 	dogFlowShader = new DoG_via_FlowCurve(renderer->getDevice(), hwnd);
 	cqShader = new ColourQuantization(renderer->getDevice(), hwnd);
+	cartoonShader = new CartoonRendering(renderer->getDevice(), hwnd);
 }
 
 void App1::InitialiseMeshs(int screenWidth, int screenHeight)
@@ -682,7 +690,8 @@ void App1::GUI()
 
 		if (ImGui::TreeNode("Texture Selection"))
 		{
-			const char* textureOptions[] = { "Original Scene", "Bilateral Filter Texture", "Final Bilateral Texture", "Structure Tensor Texture", "Smoothed Flow Map Texture", "Smooth Structure Tensor (Horiz)", "DoG Filter", "Flow Curve Calc", "Dog Flow Texture", "Colour Quantization Texture"};
+			const char* textureOptions[] = { "Original Scene", "Bilateral Filter Texture", "Final Bilateral Texture", "Structure Tensor Texture", "Smoothed Flow Map Texture", 
+				"Smooth Structure Tensor (Horiz)", "DoG Filter", "Flow Curve Calc", "Dog Flow Texture", "Colour Quantization Texture", "Cartoon Rendering Texture"};
 			ImGui::Combo("Output Texture", &selectedTexture, textureOptions, IM_ARRAYSIZE(textureOptions));
 			ImGui::TreePop();
 		}

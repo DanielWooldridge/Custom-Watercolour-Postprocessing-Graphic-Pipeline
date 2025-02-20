@@ -19,6 +19,7 @@
 #include "FlowCurve.h"
 #include "DoG_via_FlowCurve.h"
 #include "ColourQuantization.h"
+#include "CartoonRendering.h"
 
 class App1 : public BaseApplication
 {
@@ -72,6 +73,7 @@ private:
 	FlowCurve* flowCurveShader;
 	DoG_via_FlowCurve* dogFlowShader;
 	ColourQuantization* cqShader;
+	CartoonRendering* cartoonShader;
 
 	//Mesh Declaration
 	PlaneMesh* floor;
