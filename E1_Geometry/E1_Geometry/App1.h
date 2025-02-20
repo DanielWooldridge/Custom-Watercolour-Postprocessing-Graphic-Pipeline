@@ -42,6 +42,7 @@ protected:
 	void FlowCurvePass();
 	void DoGFlowPass();
 	void ColourQuantizationPass();
+	void CartoonRenderingPass();
 	void ComparisonPass();
 	void FinalPass();
 	bool Render();
@@ -95,6 +96,7 @@ private:
 	RenderTexture* flowCurveTexture;
 	RenderTexture* dogFlowTexture;
 	RenderTexture* colourQuantizationTexture;
+	RenderTexture* cartoonRenderTexture;
 
 
 	//Lighting
@@ -137,6 +139,7 @@ private:
 
 	// Colour quantization controls
 	float transitionSmoothing;
+	float quantLevel;
 
 	//Overarching Vairables
 	float totalTime;

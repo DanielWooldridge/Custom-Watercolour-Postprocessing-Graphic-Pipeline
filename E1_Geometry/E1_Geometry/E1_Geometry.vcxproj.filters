@@ -66,6 +66,9 @@
     <ClCompile Include="ColourQuantization.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CartoonRendering.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App1.h">
@@ -114,6 +117,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ColourQuantization.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CartoonRendering.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -200,6 +206,12 @@
       <Filter>Resource Files</Filter>
     </FxCompile>
     <FxCompile Include="colour_quantization_vs.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="cartoon_rendering_ps.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="cartoon_rendering_vs.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
   </ItemGroup>

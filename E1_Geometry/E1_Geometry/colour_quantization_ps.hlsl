@@ -4,7 +4,8 @@ SamplerState sampleType : register(s0);
 cbuffer cqBuffer : register(b1)
 {
     float transitionSmoothing;
-    float3 padding;
+    float quantLevel;
+    float2 padding;
 }
 
 struct InputType
@@ -20,7 +21,7 @@ float4 main(InputType input) : SV_TARGET
     float4 colour = img.Sample(sampleType, input.tex);
 
     // Number of quantization levels (e.g., 10)
-    float numLevels = 2.0;
+    float numLevels = 10;
 
     // Floor the color to the nearest level
     float3 qn = floor(colour * numLevels + 0.5) / numLevels;
@@ -32,9 +33,9 @@ float4 main(InputType input) : SV_TARGET
   
 
     //return float4(1, 0, 0, 1);  // Red output
-    return colour;
+    //return colour;
 
     //return img.Sample(sampleType, input.tex); // Directly output the texture color
-    //return float4(qn, 1.0);  // This should give you blocky colors
+    return float4(qn, 1.0);  // This should give you blocky colors
 
 }

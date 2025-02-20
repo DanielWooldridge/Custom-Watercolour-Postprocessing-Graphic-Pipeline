@@ -1,11 +1,11 @@
-#include "ColourQuantization.h"
+#include "CartoonRendering.h"
 
-ColourQuantization::ColourQuantization(ID3D11Device* device, HWND hwnd) : BaseShader (device, hwnd)
+CartoonRendering::CartoonRendering(ID3D11Device* device, HWND hwnd) : BaseShader(device, hwnd)
 {
-	initShader(L"colour_quantization_vs.cso", L"colour_quantization_ps.cso");
+	initShader(L"cartoon_rendering_vs.cso", L"cartoon_rendering_ps.cso");
 }
 
-ColourQuantization::~ColourQuantization()
+CartoonRendering::~CartoonRendering()
 {
 	// Release the matrix constant buffer.
 	if (matrixBuffer)
@@ -24,11 +24,11 @@ ColourQuantization::~ColourQuantization()
 	BaseShader::~BaseShader();
 }
 
-void ColourQuantization::initShader(const wchar_t* vsFilename, const wchar_t* psFilename)
+void CartoonRendering::initShader(const wchar_t* vsFilename, const wchar_t* psFilename)
 {
 	D3D11_BUFFER_DESC matrixBufferDesc;
 	D3D11_SAMPLER_DESC samplerDesc;
-	D3D11_BUFFER_DESC cqBufferDesc;
+	
 
 	// Load (+ compile) shader files
 	loadVertexShader(vsFilename);
@@ -57,21 +57,10 @@ void ColourQuantization::initShader(const wchar_t* vsFilename, const wchar_t* ps
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
 	renderer->CreateSamplerState(&samplerDesc, &sampleState);
-
-	//CQ BUffer
-	cqBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	cqBufferDesc.ByteWidth = sizeof(CQFilterType);
-	cqBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	cqBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	cqBufferDesc.MiscFlags = 0;
-	cqBufferDesc.StructureByteStride = 0;
-
-	renderer->CreateBuffer(&cqBufferDesc, NULL, &cqBuffer);
-
 }
 
-void ColourQuantization::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX& worldMatrix, const XMMATRIX& viewMatrix, 
-	const XMMATRIX& projectionMatrix, ID3D11ShaderResourceView* inputTexture, float transitionSmoothing, float quantLevel)
+
+void CartoonRendering::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX& worldMatrix, const XMMATRIX& viewMatrix, const XMMATRIX& projectionMatrix, ID3D11ShaderResourceView* inputTexture, ID3D11ShaderResourceView* inputTextureTwo)
 {
 	HRESULT result;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -90,13 +79,8 @@ void ColourQuantization::setShaderParameters(ID3D11DeviceContext* deviceContext,
 	deviceContext->Unmap(matrixBuffer, 0);
 	deviceContext->VSSetConstantBuffers(0, 1, &matrixBuffer);
 
-	CQFilterType* cqptr;
-	deviceContext->Map(cqBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	cqptr = (CQFilterType*)mappedResource.pData;
-	cqptr->transitionSmoothing = transitionSmoothing;
-	cqptr->quantLevel = quantLevel;
-	deviceContext->Unmap(cqBuffer, 0);
-	deviceContext->PSSetConstantBuffers(0, 1, &cqBuffer);
 	deviceContext->PSSetShaderResources(0, 1, &inputTexture);
+	deviceContext->PSSetShaderResources(1, 1, &inputTextureTwo);
 	deviceContext->PSSetSamplers(0, 1, &sampleState);
 }
+

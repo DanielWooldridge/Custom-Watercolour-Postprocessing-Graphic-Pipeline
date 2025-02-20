@@ -1,26 +1,21 @@
 #pragma once
 #include "BaseShader.h"
-class ColourQuantization : public BaseShader
+
+class CartoonRendering : public BaseShader
 {
 public:
-	ColourQuantization(ID3D11Device* device, HWND hwnd);
-	~ColourQuantization();
+	CartoonRendering(ID3D11Device* device, HWND hwnd);
+	~CartoonRendering();
 
 	void setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX& worldMatrix, const XMMATRIX& viewMatrix, const XMMATRIX& projectionMatrix,
-		ID3D11ShaderResourceView* inputTexture, float transitionSmoothing, float quantLevel);
+		ID3D11ShaderResourceView* inputTexture, ID3D11ShaderResourceView* inputTextureTwo);
 
-	struct CQFilterType
-	{
-		float transitionSmoothing;
-		float quantLevel;
-		XMFLOAT2 padding;
-	};
+	
 private:
 
 	void initShader(const wchar_t* vsFilename, const wchar_t* psFilename);
 
 	ID3D11Buffer* matrixBuffer;
-	ID3D11Buffer* cqBuffer;
 	ID3D11SamplerState* sampleState;
 };
 

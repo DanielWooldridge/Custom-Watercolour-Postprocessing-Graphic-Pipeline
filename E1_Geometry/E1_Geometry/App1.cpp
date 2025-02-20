@@ -426,8 +426,24 @@ void App1::ColourQuantizationPass()
 
 	orthoMesh->sendData(renderer->getDeviceContext());
 
-	cqShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, renderTexture->getShaderResourceView(), transitionSmoothing);
+	cqShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, finalBilateralTexture->getShaderResourceView(), transitionSmoothing, quantLevel);
 	cqShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
+
+	renderer->setZBuffer(true);
+}
+
+void App1::CartoonRenderingPass()
+{
+	cartoonRenderTexture->setRenderTarget(renderer->getDeviceContext());
+	cartoonRenderTexture->clearRenderTarget(renderer->getDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
+
+	XMMATRIX worldMatrix = renderer->getWorldMatrix();
+	XMMATRIX orthoMatrix = cartoonRenderTexture->getOrthoMatrix();
+	XMMATRIX orthoViewMatrix = camera->getOrthoViewMatrix();
+
+	renderer->setZBuffer(false);
+
+	orthoMesh->sendData(renderer->getDeviceContext());
 
 	renderer->setZBuffer(true);
 }
@@ -593,6 +609,7 @@ void App1::InitialiseVariables(int screenWidth, int screenHeight)
 	dogFlowSmoothing = 1.5f;
 
 	transitionSmoothing = 3.4f;
+	quantLevel = 10.0f;
 }
 
 void App1::InitialiseRenderTextures(int screenWidth, int screenHeight)
@@ -609,6 +626,7 @@ void App1::InitialiseRenderTextures(int screenWidth, int screenHeight)
 	flowCurveTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 	dogFlowTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 	colourQuantizationTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
+	cartoonRenderTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 }
 
 void App1::InitaliseLights()
@@ -701,6 +719,7 @@ void App1::GUI()
 		if (ImGui::TreeNode("Colour Quantization Settings"))
 		{
 			ImGui::SliderFloat("Smoothing", &transitionSmoothing, 0.0f, 5.0f);
+			ImGui::SliderFloat("Quantization Level", &quantLevel, 0.0f, 20.0f);
 
 			ImGui::TreePop();
 		}
