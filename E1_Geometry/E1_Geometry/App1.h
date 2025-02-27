@@ -20,6 +20,7 @@
 #include "DoG_via_FlowCurve.h"
 #include "ColourQuantization.h"
 #include "CartoonRendering.h"
+#include "PaperShader.h"
 
 class App1 : public BaseApplication
 {
@@ -44,6 +45,7 @@ protected:
 	void DoGFlowPass();
 	void ColourQuantizationPass();
 	void CartoonRenderingPass();
+	void PaperRenderingPass();
 	void ComparisonPass();
 	void FinalPass();
 	bool Render();
@@ -74,6 +76,7 @@ private:
 	DoG_via_FlowCurve* dogFlowShader;
 	ColourQuantization* cqShader;
 	CartoonRendering* cartoonShader;
+	PaperShader* paperShader;
 
 	//Mesh Declaration
 	PlaneMesh* floor;
@@ -99,6 +102,7 @@ private:
 	RenderTexture* dogFlowTexture;
 	RenderTexture* colourQuantizationTexture;
 	RenderTexture* cartoonRenderTexture;
+	RenderTexture* paperRenderTexture;
 
 
 	//Lighting
@@ -148,6 +152,8 @@ private:
 	ID3D11ShaderResourceView* skyMapTextures[6];
 	ID3D11RasterizerState* skyboxRasterizerState;
 	ID3D11ShaderResourceView* skyboxTexture;
+
+	ID3D11ShaderResourceView* paperTexture;
 
 };
 

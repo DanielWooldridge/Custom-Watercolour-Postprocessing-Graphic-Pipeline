@@ -176,6 +176,7 @@
     <ClCompile Include="HorizontalBlur.cpp" />
     <ClCompile Include="MovementShader.cpp" />
     <ClCompile Include="OceanShader.cpp" />
+    <ClCompile Include="PaperShader.cpp" />
     <ClCompile Include="Skybox.cpp" />
     <ClCompile Include="TextureShader.cpp" />
     <ClCompile Include="ColourTriangle.cpp" />
@@ -196,6 +197,7 @@
     <ClInclude Include="HorizontalBlur.h" />
     <ClInclude Include="MovementShader.h" />
     <ClInclude Include="OceanShader.h" />
+    <ClInclude Include="PaperShader.h" />
     <ClInclude Include="Skybox.h" />
     <ClInclude Include="TextureShader.h" />
     <ClInclude Include="ColourTriangle.h" />
@@ -336,6 +338,18 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
     <FxCompile Include="ocean_vs.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="paper_ps.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="paper_vs.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>

@@ -20,7 +20,7 @@ float4 main(InputType input) : SV_TARGET
 
     // Get direction from flow curve texture
     float2 tangent = normalize(tfm.Sample(sampleType, uv).xy);
-    if (dot(tangent, tangent) == 0.0) return float4(0, 0, 0, 1); 
+   // if (dot(tangent, tangent) == 0.0) return float4(0, 0, 0, 1); 
 
     // 1st Dog Pass edge intensity
     float H = img.Sample(sampleType, uv).x;
