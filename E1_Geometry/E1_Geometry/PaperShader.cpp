@@ -27,6 +27,7 @@ PaperShader::~PaperShader()
 void PaperShader::initShader(const wchar_t* vsFilename, const wchar_t* psFilename)
 {
 	D3D11_BUFFER_DESC matrixBufferDesc;
+	D3D11_BUFFER_DESC paperBufferDesc;
 	D3D11_SAMPLER_DESC samplerDesc;
 
 	// Load (+ compile) shader files
@@ -41,8 +42,17 @@ void PaperShader::initShader(const wchar_t* vsFilename, const wchar_t* psFilenam
 	matrixBufferDesc.MiscFlags = 0;
 	matrixBufferDesc.StructureByteStride = 0;
 
-	// Create the constant buffer pointer so we can access the vertex shader constant buffer from within this class.
 	renderer->CreateBuffer(&matrixBufferDesc, NULL, &matrixBuffer);
+
+	// Setup Paper Buffer
+	paperBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	paperBufferDesc.ByteWidth = sizeof(paperTextureBuffer);
+	paperBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	paperBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	paperBufferDesc.MiscFlags = 0;
+	paperBufferDesc.StructureByteStride = 0;
+
+	renderer->CreateBuffer(&paperBufferDesc, NULL, &paperBuffer);
 
 	// Create a texture sampler state description.
 	samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC;
@@ -59,7 +69,7 @@ void PaperShader::initShader(const wchar_t* vsFilename, const wchar_t* psFilenam
 }
 
 void PaperShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX& worldMatrix, const XMMATRIX& viewMatrix, const XMMATRIX& projectionMatrix, 
-	ID3D11ShaderResourceView* paperTex, ID3D11ShaderResourceView* renderTex)
+	ID3D11ShaderResourceView* paperTex, ID3D11ShaderResourceView* renderTex, float paperStrength)
 {
 	HRESULT result;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -77,6 +87,13 @@ void PaperShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const 
 	dataPtr->projection = tproj;
 	deviceContext->Unmap(matrixBuffer, 0);
 	deviceContext->VSSetConstantBuffers(0, 1, &matrixBuffer);
+
+	paperTextureBuffer* paperptr;
+	result = deviceContext->Map(paperBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	paperptr = (paperTextureBuffer*)mappedResource.pData;
+	paperptr->strength = paperStrength;
+	deviceContext->Unmap(paperBuffer, 0);
+	deviceContext->PSSetConstantBuffers(1, 1, &paperBuffer);
 
 	deviceContext->PSSetShaderResources(0, 1, &paperTex); // Texture slot t0
 	deviceContext->PSSetShaderResources(1, 1, &renderTex); // Texture slot t1

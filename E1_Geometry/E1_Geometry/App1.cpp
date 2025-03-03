@@ -466,7 +466,7 @@ void App1::PaperRenderingPass()
 	renderer->setZBuffer(false);
 
 	orthoMesh->sendData(renderer->getDeviceContext());
-	paperShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, paperTexture, colourQuantizationTexture->getShaderResourceView());
+	paperShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, paperTexture, colourQuantizationTexture->getShaderResourceView(), paperStrength);
 	paperShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
 
 	renderer->setZBuffer(true);
@@ -642,6 +642,8 @@ void App1::InitialiseVariables(int screenWidth, int screenHeight)
 
 	transitionSmoothing = 3.4f;
 	quantLevel = 10.0f;
+
+	paperStrength = 0.6f;
 }
 
 void App1::InitialiseRenderTextures(int screenWidth, int screenHeight)
@@ -759,6 +761,12 @@ void App1::GUI()
 			ImGui::SliderFloat("Smoothing", &transitionSmoothing, 0.0f, 5.0f);
 			ImGui::SliderFloat("Quantization Level", &quantLevel, 0.0f, 20.0f);
 
+			ImGui::TreePop();
+		}
+		if (ImGui::TreeNode("Canvas Overlay Settings"))
+		{
+			ImGui::SliderFloat("Canvas Strength", &paperStrength, 0.0f, 1.0f);
+			
 			ImGui::TreePop();
 		}
 		ImGui::TreePop();

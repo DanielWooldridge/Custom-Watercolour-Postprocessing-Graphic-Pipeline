@@ -147,6 +147,9 @@ private:
 	float transitionSmoothing;
 	float quantLevel;
 
+	// Paper Shader Controls
+	float paperStrength;
+
 	//Overarching Vairables
 	float totalTime;
 	ID3D11ShaderResourceView* skyMapTextures[6];
