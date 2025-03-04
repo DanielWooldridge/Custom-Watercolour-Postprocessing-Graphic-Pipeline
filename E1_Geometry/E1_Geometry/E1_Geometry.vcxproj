@@ -165,6 +165,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="App1.cpp" />
+    <ClCompile Include="ArcBallCamera.cpp" />
     <ClCompile Include="BilateralFilter.cpp" />
     <ClCompile Include="CartoonRendering.cpp" />
     <ClCompile Include="ColourQuantization.cpp" />
@@ -187,6 +188,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App1.h" />
+    <ClInclude Include="ArcBallCamera.h" />
     <ClInclude Include="BilateralFilter.h" />
     <ClInclude Include="CartoonRendering.h" />
     <ClInclude Include="ColourQuantization.h" />
