@@ -847,7 +847,7 @@ void App1::GUI()
 		if (ImGui::TreeNode("Canvas Overlay Settings"))
 		{
 			ImGui::SliderFloat("Canvas Strength", &paperStrength, 0.0f, 1.0f);
-			ImGui::SliderFloat("Depth influence", &depthFactor, 0.0f, 5.0f);
+			ImGui::SliderFloat("Depth influence", &depthFactor, 0.0f, 1.0f);
 			
 			ImGui::TreePop();
 		}

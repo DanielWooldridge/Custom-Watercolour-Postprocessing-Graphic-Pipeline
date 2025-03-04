@@ -5,8 +5,8 @@ SamplerState sampleType : register(s0);
 
 cbuffer PaperFilter : register(b1)
 {
-    float blendStrength;  // Minimum blend strength
-    float depthFactor;        // How much depth affects blend strength
+    float blendStrength;  
+    float depthFactor;
 };
 
 struct InputType
@@ -17,47 +17,26 @@ struct InputType
 
 float4 main(InputType input) : SV_TARGET
 {
-    //// Sample the textures
-    //float4 paperTexture = paperTex.Sample(sampleType, input.tex);
-    //float4 renderTexture = renderTex.Sample(sampleType, input.tex);
-    //float depthValue = depthTex.Sample(sampleType, input.tex).r; // Read depth (usually red channel)
-
-    //// Convert paper texture to grayscale for better blending
-    //float paperDetail = dot(paperTexture.rgb, float3(0.3, 0.59, 0.11));
-
-    //// Adjust blend strength based on depth (Closer = Stronger Paper Effect)
-    //float dynamicBlend = blendStrength + ((1.0 - depthValue) * depthFactor);
-    //dynamicBlend = saturate(dynamicBlend); // Keep in range [0,1]
-
-    //// Ensure skybox or undefined depth areas get minimal paper effect
-    //if (depthValue > 0.99) dynamicBlend = blendStrength;
-
-    //// Blend the render texture with the paper texture based on adjusted blend strength
-    //float4 result = lerp(renderTexture, renderTexture * (paperDetail + 0.5), dynamicBlend);
-
-    //return result;
-
-
-
-     // Sample the texture
+    // Sample Textures
     float4 paperTexture = paperTex.Sample(sampleType, input.tex);
-    //paperTexture.a = 0.4f;
-
     float4 renderTexture = renderTex.Sample(sampleType, input.tex);
+    float depthValue = depthTex.Sample(sampleType, input.tex).r;
 
+    // Convert depth to enhance contrast and control blending
+    depthValue = pow(depthValue, 2.2);  
+    depthValue = smoothstep(0.2, 0.8, depthValue);  
 
-    //float4 result = 1 - (1 - renderTexture) * (1 - paperTexture);
-    //float4 result = max(0, renderTex + paperTex - 1);
+    // dynamic blend due to distance
+    float dynamicBlend = blendStrength + (depthValue * depthFactor);
+    dynamicBlend = saturate(dynamicBlend); 
 
-    // Return the greyscale color while retaining the original alpha
-    //return (renderTexture + paperTexture - 0.4);
-    //return result;
+    // Blend
+    float3 blendOverlay = (renderTexture.rgb < 0.5) 
+        ? (2.0 * renderTexture.rgb * paperTexture.rgb)  
+        : (1.0 - 2.0 * (1.0 - renderTexture.rgb) * (1.0 - paperTexture.rgb));
 
+    
+    float3 finalColor = lerp(renderTexture.rgb, blendOverlay, dynamicBlend);
 
-
-    float4 paperDetail = dot(paperTexture.rgb, float3(0.3, 0.59, 0.11)); 
-    //float blendStrength = 0.6;  // Adjust for stronger or weaker texture presence
-    float4 result = lerp(renderTexture, renderTexture * (paperDetail + 0.5), blendStrength);
-    return result;
-
+    return float4(finalColor, renderTexture.a);
 }
