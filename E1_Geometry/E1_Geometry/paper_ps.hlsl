@@ -40,3 +40,7 @@ float4 main(InputType input) : SV_TARGET
 
     return float4(finalColor, renderTexture.a);
 }
+
+// Randomize UV via depth to make it look 3D?
+// get tex
+// 

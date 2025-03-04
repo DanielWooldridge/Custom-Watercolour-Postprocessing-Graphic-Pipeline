@@ -166,7 +166,7 @@ void App1::DepthPass()
 	XMMATRIX sphereScalingMatrix = XMMatrixScaling(2.0f, 2.0f, 2.0f);
 	XMMATRIX sphereTransformedWorldMatrix = sphereScalingMatrix * sphereTranslationMatrix * worldMatrix;
 	sphere->sendData(renderer->getDeviceContext());
-	depthShader->setShaderParameters(renderer->getDeviceContext(), sphereTransformedWorldMatrix, viewMatrix, projectionMatrix/*, totalTime, amplitude, frequency, speed, numWaves, phases, transparency, MOVEMENT_SINE*/);
+	depthShader->setShaderParameters(renderer->getDeviceContext(), sphereTransformedWorldMatrix, viewMatrix, projectionMatrix, totalTime, amplitude, frequency, speed, numWaves, phases, transparency, MOVEMENT_SINE);
 	depthShader->render(renderer->getDeviceContext(), sphere->getIndexCount());
 
 	// Render Cube
@@ -175,7 +175,7 @@ void App1::DepthPass()
 	XMMATRIX cubeScalingMatrix = XMMatrixScaling(2.0f, 2.0f, 2.0f);
 	XMMATRIX cubeTransformedWorldMatrix = cubeScalingMatrix * cubeTranslationMatrix * worldMatrix;
 	cube->sendData(renderer->getDeviceContext());
-	depthShader->setShaderParameters(renderer->getDeviceContext(), cubeTransformedWorldMatrix, viewMatrix, projectionMatrix/*, totalTime, amplitude, frequency, speed, numWaves, phases, transparency, MOVEMENT_SINE*/);
+	depthShader->setShaderParameters(renderer->getDeviceContext(), cubeTransformedWorldMatrix, viewMatrix, projectionMatrix, totalTime, amplitude, frequency, speed, numWaves, phases, transparency, MOVEMENT_SINE);
 	depthShader->render(renderer->getDeviceContext(), cube->getIndexCount());
 
 	// Render Ship Model
@@ -185,7 +185,7 @@ void App1::DepthPass()
 	XMMATRIX shipRotationMatrix = XMMatrixRotationX(160);
 	XMMATRIX shipTransformedWorldMatrix = shipRotationMatrix * shipScalingMatrix * shipTranslationMatrix * worldMatrix;
 	ship->sendData(renderer->getDeviceContext());
-	depthShader->setShaderParameters(renderer->getDeviceContext(), shipTransformedWorldMatrix, viewMatrix, projectionMatrix/*, totalTime, amplitude, frequency, speed, numWaves, phases, transparency, MOVEMENT_NONE*/);
+	depthShader->setShaderParameters(renderer->getDeviceContext(), shipTransformedWorldMatrix, viewMatrix, projectionMatrix, totalTime, amplitude, frequency, speed, numWaves, phases, transparency, MOVEMENT_NONE);
 	depthShader->render(renderer->getDeviceContext(), ship->getIndexCount());
 
 	// Render Ocean
@@ -194,7 +194,7 @@ void App1::DepthPass()
 	XMMATRIX oceanScalingMatrix = XMMatrixScaling(1.0f, 1.0f, 1.0f);
 	XMMATRIX oceanTransformedWorldMatrix = oceanScalingMatrix * oceanTranslationMatrix * worldMatrix;
 	ocean->sendData(renderer->getDeviceContext());
-	depthShader->setShaderParameters(renderer->getDeviceContext(), oceanTransformedWorldMatrix, viewMatrix, projectionMatrix/*, totalTime, amplitude, frequency, speed, numWaves, phases, transparency, MOVEMENT_WAVE*/);
+	depthShader->setShaderParameters(renderer->getDeviceContext(), oceanTransformedWorldMatrix, viewMatrix, projectionMatrix, totalTime, amplitude, frequency, speed, numWaves, phases, transparency, MOVEMENT_WAVE);
 	depthShader->render(renderer->getDeviceContext(), ocean->getIndexCount());
 
 
@@ -720,7 +720,7 @@ void App1::InitialiseVariables(int screenWidth, int screenHeight)
 	transitionSmoothing = 3.4f;
 	quantLevel = 10.0f;
 
-	paperStrength = 0.6f;
+	paperStrength = 0.2f;
 	depthFactor = 0.5f;
 
 	movementIndicator = 0.0f;

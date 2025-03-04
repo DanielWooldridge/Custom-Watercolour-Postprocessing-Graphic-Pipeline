@@ -157,9 +157,9 @@ private:
 	float depthFactor; 
 
 	float movementIndicator;
-	const float MOVEMENT_NONE = 0;   // No movement (Static objects like cubes and ships)
+	const float MOVEMENT_NONE = 0;   // No movement 
 	const float MOVEMENT_WAVE = 1;   // Ocean waves
-	const float MOVEMENT_SINE = 2;   // Floating movement (sphere)
+	const float MOVEMENT_SINE = 2;   // Floating movement 
 
 	//Overarching Vairables
 	float totalTime;
