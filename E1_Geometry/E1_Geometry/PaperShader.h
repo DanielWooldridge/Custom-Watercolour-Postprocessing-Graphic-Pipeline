@@ -9,10 +9,11 @@ public:
 	struct paperTextureBuffer
 	{
 		float strength;
-		XMFLOAT3 padding;
+		float depthFactor;
+		XMFLOAT2 padding;
 	};
 	void setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX& worldMatrix, const XMMATRIX& viewMatrix, const XMMATRIX& projectionMatrix,
-		ID3D11ShaderResourceView* paperTex, ID3D11ShaderResourceView* renderTex, float paperStrength );
+		ID3D11ShaderResourceView* paperTex, ID3D11ShaderResourceView* renderTex, ID3D11ShaderResourceView* depthTex, float paperStrength, float depthFactor );
 
 private:
 

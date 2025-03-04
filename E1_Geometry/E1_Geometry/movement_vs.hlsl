@@ -31,19 +31,6 @@ OutputType main(InputType input)
     OutputType output;
     float4 transformedPosition = input.position;
 
-    //// Apply transformations based on movementType range
-    //if (movementType < 1.0f)
-    //{
-    //    // Sine wave (vertical) movement for values less than 1.0
-    //    transformedPosition.y += sin(time) * 5.0f;
-    //}
-    //else
-    //{
-    //    // Circular movement for values 1.0 and above
-    //    transformedPosition.x += cos(time) * 5.0f;
-    //    transformedPosition.z += sin(time) * 5.0f;
-    //}
-
     
     // Create sine wave movement
     float waveAmplitude = 3.0f; // Amplitude of the sine wave

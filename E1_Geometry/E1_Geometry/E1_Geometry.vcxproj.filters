@@ -13,6 +13,15 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\Cartoon Rendering">
+      <UniqueIdentifier>{21901ff5-a68e-4fa0-946f-17b74bcbb877}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Scene">
+      <UniqueIdentifier>{14e64a0d-8012-4e55-82db-eec4ae181b3c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Tools">
+      <UniqueIdentifier>{66368127-8c6f-4fd9-9460-44b8a86e5069}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="App1.cpp">
@@ -21,55 +30,58 @@
     <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TextureShader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ColourTriangle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GreyScale.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CompSlider.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MovementShader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="StructureTensor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Skybox.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="OceanShader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="HorizontalBlur.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="VerticalBlur.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="BilateralFilter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DifferenceOfGuassian.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FlowCurve.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DoG_via_FlowCurve.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ColourQuantization.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Cartoon Rendering</Filter>
     </ClCompile>
     <ClCompile Include="CartoonRendering.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Cartoon Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="ColourQuantization.cpp">
+      <Filter>Source Files\Cartoon Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="DifferenceOfGuassian.cpp">
+      <Filter>Source Files\Cartoon Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="DoG_via_FlowCurve.cpp">
+      <Filter>Source Files\Cartoon Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="FlowCurve.cpp">
+      <Filter>Source Files\Cartoon Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="HorizontalBlur.cpp">
+      <Filter>Source Files\Cartoon Rendering</Filter>
     </ClCompile>
     <ClCompile Include="PaperShader.cpp">
+      <Filter>Source Files\Cartoon Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="StructureTensor.cpp">
+      <Filter>Source Files\Cartoon Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="VerticalBlur.cpp">
+      <Filter>Source Files\Cartoon Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureShader.cpp">
+      <Filter>Source Files\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Skybox.cpp">
+      <Filter>Source Files\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="OceanShader.cpp">
+      <Filter>Source Files\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="MovementShader.cpp">
+      <Filter>Source Files\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="CompSlider.cpp">
+      <Filter>Source Files\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="DepthShader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -126,6 +138,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PaperShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DepthShader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -224,6 +239,12 @@
       <Filter>Resource Files</Filter>
     </FxCompile>
     <FxCompile Include="paper_vs.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="depth_ps.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="depth_vs.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
   </ItemGroup>

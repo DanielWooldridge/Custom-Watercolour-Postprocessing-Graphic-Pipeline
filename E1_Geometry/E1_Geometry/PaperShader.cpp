@@ -69,7 +69,7 @@ void PaperShader::initShader(const wchar_t* vsFilename, const wchar_t* psFilenam
 }
 
 void PaperShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX& worldMatrix, const XMMATRIX& viewMatrix, const XMMATRIX& projectionMatrix, 
-	ID3D11ShaderResourceView* paperTex, ID3D11ShaderResourceView* renderTex, float paperStrength)
+	ID3D11ShaderResourceView* paperTex, ID3D11ShaderResourceView* renderTex, ID3D11ShaderResourceView* depthTex, float paperStrength, float depthFactor)
 {
 	HRESULT result;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -92,11 +92,13 @@ void PaperShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const 
 	result = deviceContext->Map(paperBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	paperptr = (paperTextureBuffer*)mappedResource.pData;
 	paperptr->strength = paperStrength;
+	paperptr->depthFactor = depthFactor;
 	deviceContext->Unmap(paperBuffer, 0);
 	deviceContext->PSSetConstantBuffers(1, 1, &paperBuffer);
 
 	deviceContext->PSSetShaderResources(0, 1, &paperTex); // Texture slot t0
 	deviceContext->PSSetShaderResources(1, 1, &renderTex); // Texture slot t1
+	deviceContext->PSSetShaderResources(2, 1, &depthTex); // Texture slot t1
 	deviceContext->PSSetSamplers(0, 1, &sampleState);
 }
 

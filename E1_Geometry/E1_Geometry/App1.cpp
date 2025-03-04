@@ -100,6 +100,8 @@ bool App1::frame()
 bool App1::Render()
 {
 	
+	DepthPass();
+
 	FirstPass();
 
 	GreyScalePass();
@@ -131,6 +133,75 @@ bool App1::Render()
 	FinalPass();
 
 	return true;
+}
+
+
+void App1::DepthPass()
+{
+	// Set the depth render target and clear it
+	depthTexture->setRenderTarget(renderer->getDeviceContext());
+	depthTexture->clearRenderTarget(renderer->getDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
+
+	//Force-clear the depth buffer
+	ID3D11DepthStencilView* depthStencil = nullptr;
+	renderer->getDeviceContext()->OMGetRenderTargets(0, nullptr, &depthStencil);
+	if (depthStencil)
+	{
+		renderer->getDeviceContext()->ClearDepthStencilView(depthStencil, D3D11_CLEAR_DEPTH, 1.0f, 0);
+		depthStencil->Release(); // Release reference
+	}
+
+	
+	// Generate the view matrix from the camera's perspective
+	camera->update();
+
+	// Get world, view, and projection matrices
+	XMMATRIX worldMatrix = renderer->getWorldMatrix();
+	XMMATRIX viewMatrix = camera->getViewMatrix();
+	XMMATRIX projectionMatrix = renderer->getProjectionMatrix();
+
+	// Render Sphere
+	movementIndicator = MOVEMENT_SINE;
+	XMMATRIX sphereTranslationMatrix = XMMatrixTranslation(60.0f, 10.0f, 50.0f);
+	XMMATRIX sphereScalingMatrix = XMMatrixScaling(2.0f, 2.0f, 2.0f);
+	XMMATRIX sphereTransformedWorldMatrix = sphereScalingMatrix * sphereTranslationMatrix * worldMatrix;
+	sphere->sendData(renderer->getDeviceContext());
+	depthShader->setShaderParameters(renderer->getDeviceContext(), sphereTransformedWorldMatrix, viewMatrix, projectionMatrix/*, totalTime, amplitude, frequency, speed, numWaves, phases, transparency, MOVEMENT_SINE*/);
+	depthShader->render(renderer->getDeviceContext(), sphere->getIndexCount());
+
+	// Render Cube
+	movementIndicator = MOVEMENT_SINE;
+	XMMATRIX cubeTranslationMatrix = XMMatrixTranslation(50.0f, 10.0f, 62.5f);
+	XMMATRIX cubeScalingMatrix = XMMatrixScaling(2.0f, 2.0f, 2.0f);
+	XMMATRIX cubeTransformedWorldMatrix = cubeScalingMatrix * cubeTranslationMatrix * worldMatrix;
+	cube->sendData(renderer->getDeviceContext());
+	depthShader->setShaderParameters(renderer->getDeviceContext(), cubeTransformedWorldMatrix, viewMatrix, projectionMatrix/*, totalTime, amplitude, frequency, speed, numWaves, phases, transparency, MOVEMENT_SINE*/);
+	depthShader->render(renderer->getDeviceContext(), cube->getIndexCount());
+
+	// Render Ship Model
+	movementIndicator = MOVEMENT_NONE;
+	XMMATRIX shipTranslationMatrix = XMMatrixTranslation(40.0f, 7.0f, 40.0f);
+	XMMATRIX shipScalingMatrix = XMMatrixScaling(2.0f, 2.0f, 2.0f);
+	XMMATRIX shipRotationMatrix = XMMatrixRotationX(160);
+	XMMATRIX shipTransformedWorldMatrix = shipRotationMatrix * shipScalingMatrix * shipTranslationMatrix * worldMatrix;
+	ship->sendData(renderer->getDeviceContext());
+	depthShader->setShaderParameters(renderer->getDeviceContext(), shipTransformedWorldMatrix, viewMatrix, projectionMatrix/*, totalTime, amplitude, frequency, speed, numWaves, phases, transparency, MOVEMENT_NONE*/);
+	depthShader->render(renderer->getDeviceContext(), ship->getIndexCount());
+
+	// Render Ocean
+	movementIndicator = MOVEMENT_WAVE;
+	XMMATRIX oceanTranslationMatrix = XMMatrixTranslation(0.0f, 0.0f, 0.0f);
+	XMMATRIX oceanScalingMatrix = XMMatrixScaling(1.0f, 1.0f, 1.0f);
+	XMMATRIX oceanTransformedWorldMatrix = oceanScalingMatrix * oceanTranslationMatrix * worldMatrix;
+	ocean->sendData(renderer->getDeviceContext());
+	depthShader->setShaderParameters(renderer->getDeviceContext(), oceanTransformedWorldMatrix, viewMatrix, projectionMatrix/*, totalTime, amplitude, frequency, speed, numWaves, phases, transparency, MOVEMENT_WAVE*/);
+	depthShader->render(renderer->getDeviceContext(), ocean->getIndexCount());
+
+
+
+	// Set back buffer as render target and reset view port.
+	renderer->setBackBufferRenderTarget();
+	renderer->resetViewport();
 }
 
 
@@ -466,7 +537,7 @@ void App1::PaperRenderingPass()
 	renderer->setZBuffer(false);
 
 	orthoMesh->sendData(renderer->getDeviceContext());
-	paperShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, paperTexture, colourQuantizationTexture->getShaderResourceView(), paperStrength);
+	paperShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, paperTexture, colourQuantizationTexture->getShaderResourceView(), depthTexture->getShaderResourceView(), paperStrength, depthFactor);
 	paperShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
 
 	renderer->setZBuffer(true);
@@ -528,6 +599,9 @@ void App1::ComparisonPass()
 		break;
 	case 11:
 		selectedResourceView = paperRenderTexture->getShaderResourceView();
+		break;
+	case 12:
+		selectedResourceView = depthTexture->getShaderResourceView();
 		break;
 	default:
 		selectedResourceView = renderTexture->getShaderResourceView();
@@ -598,6 +672,7 @@ void App1::InitialiseShaders(HINSTANCE hinstance, HWND hwnd, int screenWidth, in
 	cqShader = new ColourQuantization(renderer->getDevice(), hwnd);
 	cartoonShader = new CartoonRendering(renderer->getDevice(), hwnd);
 	paperShader = new PaperShader(renderer->getDevice(), hwnd);
+	depthShader = new DepthShader(renderer->getDevice(), hwnd);
 }
 
 void App1::InitialiseMeshs(int screenWidth, int screenHeight)
@@ -622,6 +697,8 @@ void App1::InitialiseVariables(int screenWidth, int screenHeight)
 	phases = 1;
 	transparency = 1.0f;
 
+	
+
 	comparisonSliderPosition = 1.f;
 
 	range = 0.1f; //maybe 0.2?
@@ -644,6 +721,9 @@ void App1::InitialiseVariables(int screenWidth, int screenHeight)
 	quantLevel = 10.0f;
 
 	paperStrength = 0.6f;
+	depthFactor = 0.5f;
+
+	movementIndicator = 0.0f;
 }
 
 void App1::InitialiseRenderTextures(int screenWidth, int screenHeight)
@@ -662,6 +742,7 @@ void App1::InitialiseRenderTextures(int screenWidth, int screenHeight)
 	colourQuantizationTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 	cartoonRenderTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 	paperRenderTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
+	depthTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 }
 
 void App1::InitaliseLights()
@@ -721,8 +802,8 @@ void App1::GUI()
 		if (ImGui::TreeNode("Texture Selection"))
 		{
 			const char* textureOptions[] = { "Original Scene", "Bilateral Filter Texture", "Final Bilateral Texture", "Structure Tensor Texture", "Smoothed Flow Map Texture", 
-				"Smooth Structure Tensor (Horiz)", "DoG Filter", "Flow Curve Calc", "Dog Flow Texture", "Colour Quantization Texture", "Cartoon Rendering Texture", 
-				"Paper Texure"};
+				"Smooth Structure Tensor (Horiz)", "DoG Filter", "Flow Curve Calc", "Dog Flow Texture", "Colour Quantization Texture", "Cartoon Rendering Texture",
+				"Paper Texure", "Depth Texture"};
 			ImGui::Combo("Output Texture", &selectedTexture, textureOptions, IM_ARRAYSIZE(textureOptions));
 			ImGui::TreePop();
 		}
@@ -766,6 +847,7 @@ void App1::GUI()
 		if (ImGui::TreeNode("Canvas Overlay Settings"))
 		{
 			ImGui::SliderFloat("Canvas Strength", &paperStrength, 0.0f, 1.0f);
+			ImGui::SliderFloat("Depth influence", &depthFactor, 0.0f, 5.0f);
 			
 			ImGui::TreePop();
 		}

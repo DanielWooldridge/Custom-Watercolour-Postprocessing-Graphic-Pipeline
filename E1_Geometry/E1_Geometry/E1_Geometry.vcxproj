@@ -169,6 +169,7 @@
     <ClCompile Include="CartoonRendering.cpp" />
     <ClCompile Include="ColourQuantization.cpp" />
     <ClCompile Include="CompSlider.cpp" />
+    <ClCompile Include="DepthShader.cpp" />
     <ClCompile Include="DifferenceOfGuassian.cpp" />
     <ClCompile Include="DoG_via_FlowCurve.cpp" />
     <ClCompile Include="FlowCurve.cpp" />
@@ -190,6 +191,7 @@
     <ClInclude Include="CartoonRendering.h" />
     <ClInclude Include="ColourQuantization.h" />
     <ClInclude Include="CompSlider.h" />
+    <ClInclude Include="DepthShader.h" />
     <ClInclude Include="DifferenceOfGuassian.h" />
     <ClInclude Include="DoG_via_FlowCurve.h" />
     <ClInclude Include="FlowCurve.h" />
@@ -254,6 +256,18 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
     <FxCompile Include="compslider_vs.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="depth_ps.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="depth_vs.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>

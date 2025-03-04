@@ -21,6 +21,7 @@
 #include "ColourQuantization.h"
 #include "CartoonRendering.h"
 #include "PaperShader.h"
+#include "DepthShader.h"
 
 class App1 : public BaseApplication
 {
@@ -34,6 +35,7 @@ public:
 
 protected:
 
+	void DepthPass();
 	void FirstPass();
 	void GreyScalePass();
 	void StructureTensorPass();
@@ -77,6 +79,7 @@ private:
 	ColourQuantization* cqShader;
 	CartoonRendering* cartoonShader;
 	PaperShader* paperShader;
+	DepthShader* depthShader;
 
 	//Mesh Declaration
 	PlaneMesh* floor;
@@ -89,6 +92,7 @@ private:
 
 
 	//Render To Texture
+	RenderTexture* depthTexture;
 	RenderTexture* renderTexture;
 	RenderTexture* greyscaleTexture;
 	RenderTexture* comparisonTexture;
@@ -103,6 +107,7 @@ private:
 	RenderTexture* colourQuantizationTexture;
 	RenderTexture* cartoonRenderTexture;
 	RenderTexture* paperRenderTexture;
+	
 
 
 	//Lighting
@@ -149,6 +154,12 @@ private:
 
 	// Paper Shader Controls
 	float paperStrength;
+	float depthFactor; 
+
+	float movementIndicator;
+	const float MOVEMENT_NONE = 0;   // No movement (Static objects like cubes and ships)
+	const float MOVEMENT_WAVE = 1;   // Ocean waves
+	const float MOVEMENT_SINE = 2;   // Floating movement (sphere)
 
 	//Overarching Vairables
 	float totalTime;

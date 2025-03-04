@@ -17,6 +17,41 @@ struct InputType
     float2 tex : TEXCOORD0;
 };
 
+float ApplySobel(float2 uv)
+{
+    float sampleValues[9];
+    float2 offsets[9] = {
+        float2(-1, -1), float2(0, -1), float2(1, -1),
+        float2(-1,  0), float2(0,  0), float2(1,  0),
+        float2(-1,  1), float2(0,  1), float2(1,  1)
+    };
+
+    // Sample DoG results
+    for (int i = 0; i < 9; i++)
+    {
+        float2 sampleUV = uv + offsets[i] * texelSize;
+        sampleValues[i] = img.Sample(sampleType, sampleUV).r;
+    }
+
+    // Sobel kernels
+    float SobelX[9] = { -1,  0,  1, -2,  0,  2, -1,  0,  1 };
+    float SobelY[9] = { -1, -2, -1,  0,  0,  0,  1,  2,  1 };
+
+    float Gx = 0, Gy = 0;
+    for (int i = 0; i < 9; i++)
+    {
+        Gx += sampleValues[i] * SobelX[i];
+        Gy += sampleValues[i] * SobelY[i];
+    }
+
+    // Compute final Sobel edge magnitude
+    float sobelEdge = sqrt(Gx * Gx + Gy * Gy);
+    sobelEdge = clamp(sobelEdge * 2.0, 0.0, 1.0);
+
+    return sobelEdge;
+}
+
+
 float4 main(InputType input) : SV_TARGET
 {
     float2 uv = input.tex;
@@ -62,9 +97,21 @@ float4 main(InputType input) : SV_TARGET
     float diff = 100.0 * (sum.x - tau * sum.y);
     diff = clamp(diff, 0.0, 1.0); // Clamp to range [0, 1]
 
+    float sobelOperation = ApplySobel(uv);
+
     // Output the result
     return float4(diff, diff, diff, 1.0);
 
+    //With Sobel
+    //return float4(sobelOperation, sobelOperation, sobelOperation, 1.0);
+    // Should show gradient colors
+
+
+   //float testValue = img.Sample(sampleType, uv).r;
+   // return float4(testValue, testValue, testValue, 1.0); // Should show grayscale DoG image
+
+    //float DoG = img.Sample(sampleType, uv).r; 
+    //return float4(DoG, DoG, DoG, 1.0);
 
 
     //float value = img.Sample(sampleType, uv).r;
