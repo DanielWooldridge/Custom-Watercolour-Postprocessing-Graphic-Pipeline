@@ -940,8 +940,8 @@ void App1::GUI()
 		{
 			static float arcballRadius = 100.0f;
 			static float arcballSpeed = 0.5f;
-			static XMFLOAT3 arcballTarget = XMFLOAT3(40.0f, 0.0f, 40.0f);
-			static float verticalAngle = 10.0f;
+			static XMFLOAT3 arcballTarget = XMFLOAT3(40.0f, 10.0f, 40.0f);
+			static float verticalAngle = 20.0f;
 
 			ImGui::SliderFloat("Arcball Radius", &arcballRadius, 5.0f, 100.0f);
 			ImGui::SliderFloat("Arcball Speed", &arcballSpeed, 0.1f, 2.0f);
