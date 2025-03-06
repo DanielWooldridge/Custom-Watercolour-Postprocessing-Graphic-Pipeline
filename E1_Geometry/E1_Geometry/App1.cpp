@@ -86,6 +86,8 @@ bool App1::frame()
 	{
 		return false;
 	}
+
+	UpdateCamera(timer->getTime());
 	
 	// Render the graphics.
 	result = Render();
@@ -93,6 +95,9 @@ bool App1::frame()
 	{
 		return false;
 	}
+
+	
+
 
 	return true;
 }
@@ -654,6 +659,29 @@ void App1::FinalPass()
 	renderer->endScene();
 }
 
+
+// TEMPORAL COHERENCE - https://onlinelibrary.wiley.com/doi/epdf/10.1111/j.1467-8659.2012.03075.x
+// TAA - https://onlinelibrary.wiley.com/doi/epdf/10.1111/cgf.14018
+// Temporal Filtering - https://dl.acm.org/doi/pdf/10.1145/3233301
+
+
+void App1::UpdateCamera(float deltaTime)
+{
+	if (useArcball)
+	{
+		// Update Arcball Camera
+		arcballCamera.UpdateArcballCamera(deltaTime, camera);
+	}
+	else
+	{
+		// Restore free camera position when switching back
+		//camera->setPosition(lastFreeCameraPosition.x, lastFreeCameraPosition.y, lastFreeCameraPosition.z);
+		// Stops user from moving cam
+		camera->update();
+	}
+}
+
+
 void App1::InitialiseShaders(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeight)
 {
 	textureShader = new TextureShader(renderer->getDevice(), hwnd);
@@ -724,6 +752,9 @@ void App1::InitialiseVariables(int screenWidth, int screenHeight)
 	depthFactor = 0.5f;
 
 	movementIndicator = 0.0f;
+
+	useArcball = false;
+
 }
 
 void App1::InitialiseRenderTextures(int screenWidth, int screenHeight)
@@ -816,9 +847,9 @@ void App1::GUI()
 			ImGui::TreePop();
 		}
 		if (ImGui::TreeNode("DoG Filter Settings")) {
-			ImGui::SliderFloat("Edge Sensitivity", &spatial, 1.0f, 20.0f);  // Adjust spatial sigma
-			ImGui::SliderFloat("Smoothing", &range, 0.01f, 5.0f);           // Adjust range sigma
-			ImGui::SliderFloat("Edge Threshold (tau)", &tau, 0.0f, 2.0f);             // Adjust tau
+			ImGui::SliderFloat("Edge Sensitivity", &spatial, 1.0f, 20.0f);  
+			ImGui::SliderFloat("Smoothing", &range, 0.01f, 5.0f);         
+			ImGui::SliderFloat("Edge Threshold (tau)", &tau, 0.0f, 2.0f);             
 			ImGui::TreePop();
 		}
 		if (ImGui::TreeNode("Flow Curve Settings"))
@@ -900,6 +931,41 @@ void App1::GUI()
 
 		ImGui::TreePop();
 	}
+
+	if (ImGui::TreeNode("Camera"))
+	{
+		ImGui::Checkbox("Use Arcball Camera", &useArcball);
+
+		if (useArcball)
+		{
+			static float arcballRadius = 100.0f;
+			static float arcballSpeed = 0.5f;
+			static XMFLOAT3 arcballTarget = XMFLOAT3(40.0f, 0.0f, 40.0f);
+			static float verticalAngle = 10.0f;
+
+			ImGui::SliderFloat("Arcball Radius", &arcballRadius, 5.0f, 100.0f);
+			ImGui::SliderFloat("Arcball Speed", &arcballSpeed, 0.1f, 2.0f);
+			ImGui::SliderFloat("Arcball Target - y axis", &arcballTarget.y, 0.0f, 100.0f);
+			ImGui::SliderFloat("Angle", &verticalAngle, 0.0f, 45.0f);
+
+			// Apply changes
+			arcballCamera.SetRadius(arcballRadius);
+			arcballCamera.SetSpeed(arcballSpeed);
+			arcballCamera.SetTarget(arcballTarget);
+			arcballCamera.SetAngle(verticalAngle);
+			//ImGui::Text("Arcball Pos: %.2f");
+
+			//arcballCamera.AdjustVerticalAngle(XMConvertToRadians(verticalAngle)); 
+
+			//if (ImGui::Button("Reset Arcball Camera"))
+			//{
+			//	arcballCamera.ResetAngle();
+			//}
+		}
+		ImGui::TreePop();
+	}
+
+
 
 	// Render UI
 	ImGui::Render();

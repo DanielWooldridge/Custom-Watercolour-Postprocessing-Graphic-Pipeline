@@ -1,24 +1,24 @@
 #pragma once
-#include "BaseShader.h"
-#include "FPCamera.h"
-using namespace DirectX;
+#include <DirectXMath.h>
 
-class ArcBallCamera : FPCamera
+class ArcBallCamera
 {
 public:
     ArcBallCamera();
     ~ArcBallCamera();
 
-    void EnableArcballCamera(float speed, float radius, XMFLOAT3 target);
-    void UpdateArcballCamera(float deltaTime, XMFLOAT2 mouseDelta, bool isRotating);
+    void UpdateArcballCamera(float deltaTime, class Camera* camera);
 
-    void SetTarget(XMFLOAT3 target);
-    void SetRadius(float radius);
+    void SetRadius(float r) {  radius = r; }
+    void SetSpeed(float s) { speed = s; }
+    void SetAngle(float angle) { pitch = angle; }
+    void SetTarget(DirectX::XMFLOAT3 t) { target = t; }
 
 private:
-    XMFLOAT3 target;  
-    float radius;      
-    float rotationSpeed;
-    float yaw, pitch;  
+    float radius = 100.0f;
+    float speed = 0.5f;
+    float theta = 0.0f;
+    const float phi = 0.3f; 
+    DirectX::XMFLOAT3 target;
+    float pitch;
 };
-

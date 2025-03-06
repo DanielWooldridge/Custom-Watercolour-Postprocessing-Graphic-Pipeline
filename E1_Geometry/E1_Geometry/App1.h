@@ -22,6 +22,7 @@
 #include "CartoonRendering.h"
 #include "PaperShader.h"
 #include "DepthShader.h"
+#include "ArcBallCamera.h"
 
 class App1 : public BaseApplication
 {
@@ -51,6 +52,9 @@ protected:
 	void ComparisonPass();
 	void FinalPass();
 	bool Render();
+
+
+	void UpdateCamera(float deltaTime);
 	void GUI();
 
 	void InitialiseShaders(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeight);
@@ -156,10 +160,17 @@ private:
 	float paperStrength;
 	float depthFactor; 
 
+	ArcBallCamera arcballCamera;
+	bool useArcball = false;  // Toggle for ImGui
+	DirectX::XMFLOAT3 lastFreeCameraPosition; // Store previous free camera position
+
 	float movementIndicator;
 	const float MOVEMENT_NONE = 0;   // No movement 
 	const float MOVEMENT_WAVE = 1;   // Ocean waves
 	const float MOVEMENT_SINE = 2;   // Floating movement 
+
+
+
 
 	//Overarching Vairables
 	float totalTime;
