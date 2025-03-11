@@ -133,6 +133,8 @@ bool App1::Render()
 
 	PaperRenderingPass();
 
+	TemporalPass();
+
 	ComparisonPass();
 	
 	FinalPass();
@@ -548,6 +550,33 @@ void App1::PaperRenderingPass()
 	renderer->setZBuffer(true);
 }
 
+
+void App1::TemporalPass() 
+{
+
+	blendedTexture->setRenderTarget(renderer->getDeviceContext());
+	blendedTexture->clearRenderTarget(renderer->getDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
+
+
+	XMMATRIX worldMatrix = renderer->getWorldMatrix();
+	XMMATRIX orthoMatrix = blendedTexture->getOrthoMatrix();
+	XMMATRIX orthoViewMatrix = camera->getOrthoViewMatrix();
+
+	renderer->setZBuffer(false);
+
+	orthoMesh->sendData(renderer->getDeviceContext());
+	temporalShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, previousFrameTexture->getShaderResourceView(), paperRenderTexture->getShaderResourceView());
+	temporalShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
+
+
+	renderer->getDeviceContext()->CopyResource(
+		previousFrameTexture->getTexture(),
+		comparisonTexture->getTexture()
+	);
+
+	renderer->setZBuffer(true);
+}
+
 void App1::ComparisonPass()
 {
 	// Set the comparison texture as the render target
@@ -608,6 +637,12 @@ void App1::ComparisonPass()
 	case 12:
 		selectedResourceView = depthTexture->getShaderResourceView();
 		break;
+	case 13:
+		selectedResourceView = blendedTexture->getShaderResourceView();
+		break;
+	case 14:
+		selectedResourceView = previousFrameTexture->getShaderResourceView();
+		break;
 	default:
 		selectedResourceView = renderTexture->getShaderResourceView();
 		break;
@@ -628,41 +663,37 @@ void App1::ComparisonPass()
 
 
 
+
+
 void App1::FinalPass()
 {
-	// Clear the scene. (default blue colour)
 	renderer->beginScene(0.39f, 0.58f, 0.92f, 1.0f);
-
-	// RENDER THE RENDER TEXTURE SCENE
-	// Requires 2D rendering and an ortho mesh.
 	renderer->setZBuffer(false);
+
 	XMMATRIX worldMatrix = renderer->getWorldMatrix();
-	XMMATRIX orthoMatrix = renderer->getOrthoMatrix();  // ortho matrix for 2D rendering
-	XMMATRIX orthoViewMatrix = camera->getOrthoViewMatrix();	// Default camera position for orthographic rendering
+	XMMATRIX orthoMatrix = renderer->getOrthoMatrix();
+	XMMATRIX orthoViewMatrix = camera->getOrthoViewMatrix();
 
-	// Select the appropriate texture based on ImGui preferences
-	//auto* texture = greyscaleToggle ? greyscaleTexture->getShaderResourceView() : renderTexture->getShaderResourceView();
 	auto* texture = comparisonTexture->getShaderResourceView();
-	// Send mesh data once
-	orthoMesh->sendData(renderer->getDeviceContext());
 
-	// Set shader parameters and render with the selected texture
+	orthoMesh->sendData(renderer->getDeviceContext());
 	textureShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, texture);
 	textureShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
 
 	renderer->setZBuffer(true);
-
-	// Render GUI
+	renderer->setBackBufferRenderTarget();
+	renderer->resetViewport();
 	GUI();
-
-	// Present the rendered scene to the screen.
 	renderer->endScene();
 }
+
+
 
 
 // TEMPORAL COHERENCE - https://onlinelibrary.wiley.com/doi/epdf/10.1111/j.1467-8659.2012.03075.x
 // TAA - https://onlinelibrary.wiley.com/doi/epdf/10.1111/cgf.14018
 // Temporal Filtering - https://dl.acm.org/doi/pdf/10.1145/3233301
+// This is good - https://www.elopezr.com/temporal-aa-and-the-quest-for-the-holy-trail/
 
 
 void App1::UpdateCamera(float deltaTime)
@@ -701,6 +732,7 @@ void App1::InitialiseShaders(HINSTANCE hinstance, HWND hwnd, int screenWidth, in
 	cartoonShader = new CartoonRendering(renderer->getDevice(), hwnd);
 	paperShader = new PaperShader(renderer->getDevice(), hwnd);
 	depthShader = new DepthShader(renderer->getDevice(), hwnd);
+	temporalShader = new TemporalCoherence(renderer->getDevice(), hwnd);
 }
 
 void App1::InitialiseMeshs(int screenWidth, int screenHeight)
@@ -774,6 +806,8 @@ void App1::InitialiseRenderTextures(int screenWidth, int screenHeight)
 	cartoonRenderTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 	paperRenderTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 	depthTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
+	blendedTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
+	previousFrameTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 }
 
 void App1::InitaliseLights()
@@ -834,7 +868,7 @@ void App1::GUI()
 		{
 			const char* textureOptions[] = { "Original Scene", "Bilateral Filter Texture", "Final Bilateral Texture", "Structure Tensor Texture", "Smoothed Flow Map Texture", 
 				"Smooth Structure Tensor (Horiz)", "DoG Filter", "Flow Curve Calc", "Dog Flow Texture", "Colour Quantization Texture", "Cartoon Rendering Texture",
-				"Paper Texure", "Depth Texture"};
+				"Paper Texure", "Depth Texture", "Temporal Texture", "Last Frame"};
 			ImGui::Combo("Output Texture", &selectedTexture, textureOptions, IM_ARRAYSIZE(textureOptions));
 			ImGui::TreePop();
 		}
@@ -953,14 +987,7 @@ void App1::GUI()
 			arcballCamera.SetSpeed(arcballSpeed);
 			arcballCamera.SetTarget(arcballTarget);
 			arcballCamera.SetAngle(verticalAngle);
-			//ImGui::Text("Arcball Pos: %.2f");
-
-			//arcballCamera.AdjustVerticalAngle(XMConvertToRadians(verticalAngle)); 
-
-			//if (ImGui::Button("Reset Arcball Camera"))
-			//{
-			//	arcballCamera.ResetAngle();
-			//}
+			
 		}
 		ImGui::TreePop();
 	}

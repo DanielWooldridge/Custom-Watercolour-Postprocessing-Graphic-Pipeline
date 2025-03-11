@@ -23,6 +23,7 @@
 #include "PaperShader.h"
 #include "DepthShader.h"
 #include "ArcBallCamera.h"
+#include "TemporalCoherence.h"
 
 class App1 : public BaseApplication
 {
@@ -50,6 +51,7 @@ protected:
 	void CartoonRenderingPass();
 	void PaperRenderingPass();
 	void ComparisonPass();
+	void TemporalPass();
 	void FinalPass();
 	bool Render();
 
@@ -84,6 +86,7 @@ private:
 	CartoonRendering* cartoonShader;
 	PaperShader* paperShader;
 	DepthShader* depthShader;
+	TemporalCoherence* temporalShader;
 
 	//Mesh Declaration
 	PlaneMesh* floor;
@@ -111,6 +114,8 @@ private:
 	RenderTexture* colourQuantizationTexture;
 	RenderTexture* cartoonRenderTexture;
 	RenderTexture* paperRenderTexture;
+	RenderTexture* blendedTexture;
+	RenderTexture* previousFrameTexture;
 	
 
 
@@ -170,7 +175,7 @@ private:
 	const float MOVEMENT_SINE = 2;   // Floating movement 
 
 
-
+	int frameCount = 0;
 
 	//Overarching Vairables
 	float totalTime;

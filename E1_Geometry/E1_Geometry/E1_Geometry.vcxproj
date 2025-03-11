@@ -180,6 +180,7 @@
     <ClCompile Include="OceanShader.cpp" />
     <ClCompile Include="PaperShader.cpp" />
     <ClCompile Include="Skybox.cpp" />
+    <ClCompile Include="TemporalCoherence.cpp" />
     <ClCompile Include="TextureShader.cpp" />
     <ClCompile Include="ColourTriangle.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -203,6 +204,7 @@
     <ClInclude Include="OceanShader.h" />
     <ClInclude Include="PaperShader.h" />
     <ClInclude Include="Skybox.h" />
+    <ClInclude Include="TemporalCoherence.h" />
     <ClInclude Include="TextureShader.h" />
     <ClInclude Include="ColourTriangle.h" />
     <ClInclude Include="StructureTensor.h" />
@@ -414,6 +416,18 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
     <FxCompile Include="structureTensor_vs.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="temporal_ps.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="temporal_vs.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>

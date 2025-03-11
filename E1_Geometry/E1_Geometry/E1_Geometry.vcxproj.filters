@@ -87,6 +87,9 @@
     <ClCompile Include="ArcBallCamera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TemporalCoherence.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App1.h">
@@ -147,6 +150,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ArcBallCamera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TemporalCoherence.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -251,6 +257,12 @@
       <Filter>Resource Files</Filter>
     </FxCompile>
     <FxCompile Include="depth_vs.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="temporal_vs.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="temporal_ps.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
   </ItemGroup>

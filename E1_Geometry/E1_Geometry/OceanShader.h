@@ -39,8 +39,6 @@ public:
 private:
 	void initShader(const wchar_t* vsFilename, const wchar_t* psFilename);
 
-private:
-
 	ID3D11SamplerState* sampleState;
 	ID3D11Buffer* waveBuffer;
 	ID3D11Buffer* matrixBuffer;

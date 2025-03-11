@@ -47,6 +47,9 @@ public:
 	int getTextureWidth();		///< Get width of this render texture
 	int getTextureHeight();		///< Get height of this render texture
 
+	ID3D11Texture2D* getTexture() { return renderTargetTexture; }
+
+
 private:
 	int textureWidth, textureHeight;
 	ID3D11Texture2D* renderTargetTexture;

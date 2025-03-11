@@ -101,5 +101,7 @@ void FlowCurve::setShaderParameters(ID3D11DeviceContext* deviceContext, const XM
 	deviceContext->Unmap(fCurveBuffer, 0);
 	deviceContext->PSSetConstantBuffers(0, 1, &fCurveBuffer);
 	deviceContext->PSSetSamplers(0, 1, &sampleState);
+	// Are we not sampling the texture?
+	//deviceContext->PSSetShaderResources(0, 1, &inputTexture); // huh? It looks worse lol
 }
 
