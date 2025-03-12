@@ -553,7 +553,7 @@ void App1::PaperRenderingPass()
 
 void App1::TemporalPass() 
 {
-
+	//int forwardIndex = (frameIndex + 1) % STORED_FRAMES;
 	blendedTexture->setRenderTarget(renderer->getDeviceContext());
 	blendedTexture->clearRenderTarget(renderer->getDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -563,6 +563,13 @@ void App1::TemporalPass()
 	XMMATRIX orthoViewMatrix = camera->getOrthoViewMatrix();
 
 	renderer->setZBuffer(false);
+
+	//// Pass all previous textures to shader
+	//ID3D11ShaderResourceView* previousFrames[STORED_FRAMES];
+	//for (int i = 0; i < STORED_FRAMES; i++)
+	//{
+	//	previousFrames[i] = frameBuffer[i]->getShaderResourceView();
+	//}
 
 	orthoMesh->sendData(renderer->getDeviceContext());
 	temporalShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, previousFrameTexture->getShaderResourceView(), paperRenderTexture->getShaderResourceView(), blendStrength);
@@ -786,6 +793,7 @@ void App1::InitialiseVariables(int screenWidth, int screenHeight)
 	movementIndicator = 0.0f;
 
 	blendStrength = 0.1f;
+	frameIndex = 0;
 
 	useArcball = false;
 
@@ -810,6 +818,12 @@ void App1::InitialiseRenderTextures(int screenWidth, int screenHeight)
 	depthTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 	blendedTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 	previousFrameTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
+
+	for (int i = 0; i < STORED_FRAMES; i++)
+	{
+		frameBuffer[i] = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
+	}
+	
 }
 
 void App1::InitaliseLights()

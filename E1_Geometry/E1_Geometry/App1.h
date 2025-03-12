@@ -1,6 +1,7 @@
 // Application.h
 #ifndef _APP1_H
 #define _APP1_H
+#define STORED_FRAMES 10
 
 // Includes
 #include "../DXFramework/DXF.h"
@@ -24,6 +25,7 @@
 #include "DepthShader.h"
 #include "ArcBallCamera.h"
 #include "TemporalCoherence.h"
+
 
 class App1 : public BaseApplication
 {
@@ -167,6 +169,8 @@ private:
 
 	// Temporal Coherence
 	float blendStrength;
+	int frameIndex;
+	RenderTexture* frameBuffer[STORED_FRAMES];
 
 	ArcBallCamera arcballCamera;
 	bool useArcball = false;  // Toggle for ImGui

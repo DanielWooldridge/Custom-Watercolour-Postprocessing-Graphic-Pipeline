@@ -113,6 +113,8 @@ void TemporalCoherence::setShaderParameters(ID3D11DeviceContext* deviceContext, 
 
 	// Set shader texture and sampler resource in the pixel shader.
 	deviceContext->PSSetShaderResources(0, 1, &previousFrame);
+	//deviceContext->PSSetShaderResources(0, 10, previousFrame);
+	//deviceContext->PSSetShaderResources(10, 1, &currentFrame);
 	deviceContext->PSSetShaderResources(1, 1, &currentFrame);
 	deviceContext->PSSetSamplers(0, 1, &sampleState);
 }
