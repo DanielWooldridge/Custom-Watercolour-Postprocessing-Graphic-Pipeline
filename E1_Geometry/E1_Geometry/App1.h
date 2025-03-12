@@ -116,7 +116,7 @@ private:
 	RenderTexture* paperRenderTexture;
 	RenderTexture* blendedTexture;
 	RenderTexture* previousFrameTexture;
-	
+
 
 
 	//Lighting
@@ -164,6 +164,9 @@ private:
 	// Paper Shader Controls
 	float paperStrength;
 	float depthFactor; 
+
+	// Temporal Coherence
+	float blendStrength;
 
 	ArcBallCamera arcballCamera;
 	bool useArcball = false;  // Toggle for ImGui

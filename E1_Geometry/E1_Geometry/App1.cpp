@@ -565,7 +565,7 @@ void App1::TemporalPass()
 	renderer->setZBuffer(false);
 
 	orthoMesh->sendData(renderer->getDeviceContext());
-	temporalShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, previousFrameTexture->getShaderResourceView(), paperRenderTexture->getShaderResourceView());
+	temporalShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, previousFrameTexture->getShaderResourceView(), paperRenderTexture->getShaderResourceView(), blendStrength);
 	temporalShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
 
 
@@ -785,6 +785,8 @@ void App1::InitialiseVariables(int screenWidth, int screenHeight)
 
 	movementIndicator = 0.0f;
 
+	blendStrength = 0.1f;
+
 	useArcball = false;
 
 }
@@ -919,7 +921,12 @@ void App1::GUI()
 		ImGui::TreePop();
 	}
 
-	
+	if (ImGui::TreeNode("Temporal Coherence"))
+	{
+		
+		ImGui::SliderFloat("Blend Strength", &blendStrength, 0.1, 0.9);
+		ImGui::TreePop();
+	}
 
 	// Ocean controller
 	if (ImGui::TreeNode("Ocean"))

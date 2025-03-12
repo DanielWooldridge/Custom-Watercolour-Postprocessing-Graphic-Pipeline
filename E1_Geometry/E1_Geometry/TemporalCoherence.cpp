@@ -39,6 +39,7 @@ void TemporalCoherence::initShader(const wchar_t* vsFilename, const wchar_t* psF
 {
 
 	D3D11_BUFFER_DESC matrixBufferDesc;
+	D3D11_BUFFER_DESC temporalBufferDesc;
 	D3D11_SAMPLER_DESC samplerDesc;
 
 	// Load (+ compile) shader files
@@ -69,9 +70,20 @@ void TemporalCoherence::initShader(const wchar_t* vsFilename, const wchar_t* psF
 
 	// Create the texture sampler state.
 	renderer->CreateSamplerState(&samplerDesc, &sampleState);
+
+	//DoG BUFFER
+	temporalBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	temporalBufferDesc.ByteWidth = sizeof(TemporalFilterType);
+	temporalBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	temporalBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	temporalBufferDesc.MiscFlags = 0;
+	temporalBufferDesc.StructureByteStride = 0;
+
+	renderer->CreateBuffer(&temporalBufferDesc, NULL, &temporalBuffer);
 }
 
-void TemporalCoherence::setShaderParameters(ID3D11DeviceContext* deviceContext, XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix, ID3D11ShaderResourceView* previousFrame, ID3D11ShaderResourceView* currentFrame)
+void TemporalCoherence::setShaderParameters(ID3D11DeviceContext* deviceContext, XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix, ID3D11ShaderResourceView* previousFrame, ID3D11ShaderResourceView* currentFrame,
+	float blendStrength)
 {
 
 	HRESULT result;
@@ -90,6 +102,14 @@ void TemporalCoherence::setShaderParameters(ID3D11DeviceContext* deviceContext, 
 	dataPtr->projection = tproj;
 	deviceContext->Unmap(matrixBuffer, 0);
 	deviceContext->VSSetConstantBuffers(0, 1, &matrixBuffer);
+
+	TemporalFilterType* tcptr;
+	deviceContext->Map(temporalBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	tcptr = (TemporalFilterType*)mappedResource.pData;
+	tcptr->blendStrength = blendStrength;
+	deviceContext->Unmap(temporalBuffer, 0);
+	deviceContext->PSSetConstantBuffers(0, 1, &temporalBuffer);
+
 
 	// Set shader texture and sampler resource in the pixel shader.
 	deviceContext->PSSetShaderResources(0, 1, &previousFrame);
