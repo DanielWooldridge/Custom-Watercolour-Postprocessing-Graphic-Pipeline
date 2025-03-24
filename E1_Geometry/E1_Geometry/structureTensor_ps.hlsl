@@ -11,7 +11,14 @@ float4 main(InputType input) : SV_TARGET {
     float2 uv = input.tex;
 
     // Compute gradients (Sobel-like filter)
-    float2 texelSize = float2(1.0 / 1920.0, 1.0 / 1080.0); // We can just sample the Texture
+   // float2 texelSize = float2(1.0 / 1920.0, 1.0 / 1080.0); // We can just sample the Texture
+
+    uint width, height;
+    shaderTexture.GetDimensions(width, height);
+
+    float2 texelSize = 1.0 / float2(width, height);
+
+
 
     // Gradient in X direction
     float3 u = -1.0 * shaderTexture.Sample(sampleType, uv + texelSize * float2(-1, -1)).rgb +
@@ -36,3 +43,5 @@ float4 main(InputType input) : SV_TARGET {
 
     return float4(E, F, G, 1.0); // Store as RGBA (E, F, G, unused)
 }
+
+// This could actually be the issue? 

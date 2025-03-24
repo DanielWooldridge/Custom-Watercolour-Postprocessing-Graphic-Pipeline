@@ -928,7 +928,7 @@ void App1::GUI()
 		if (ImGui::TreeNode("Canvas Overlay Settings"))
 		{
 			ImGui::SliderFloat("Canvas Strength", &paperStrength, 0.0f, 1.0f);
-			ImGui::SliderFloat("Depth influence", &depthFactor, 0.0f, 1.0f);
+			ImGui::SliderFloat("Depth influence", &depthFactor, 0.0f, 1.0f); 
 			
 			ImGui::TreePop();
 		}
@@ -948,39 +948,39 @@ void App1::GUI()
 		// Speed of the waves
 		if (ImGui::TreeNode("Speed of Waves"))
 		{
-			ImGui::SliderFloat("Speed value", &speed, 0.1, 20);
+			ImGui::SliderFloat("Speed value", &speed, 0.0, 20);
 			ImGui::TreePop();
 		}
 
 		// Frequency of the waves
 		if (ImGui::TreeNode("Frequency of Waves"))
 		{
-			ImGui::SliderFloat("Frequency", &frequency, 0.1, 5);
+			ImGui::SliderFloat("Frequency", &frequency, 0.0, 5);
 			ImGui::TreePop();
 		}
 
 		// Amplitude of the waves
 		if (ImGui::TreeNode("Amplitude of Waves"))
 		{
-			ImGui::SliderFloat("Amplitude", &amplitude, 0.1, 20);
+			ImGui::SliderFloat("Amplitude", &amplitude, 0.0, 20);
 			ImGui::TreePop();
 		}
 		// Amplitude of the waves
 		if (ImGui::TreeNode("Number of Waves"))
 		{
-			ImGui::SliderFloat("WaveNumber", &numWaves, 0.1, 20);
+			ImGui::SliderFloat("WaveNumber", &numWaves, 0.0, 20);
 			ImGui::TreePop();
 		}
 		// Amplitude of the waves
 		if (ImGui::TreeNode("Phases"))
 		{
-			ImGui::SliderFloat("Phases", &phases, 0.1, 20);
+			ImGui::SliderFloat("Phases", &phases, 0.0, 20);
 			ImGui::TreePop();
 		}
 		// Amplitude of the waves
 		if (ImGui::TreeNode("Wave Transparency"))
 		{
-			ImGui::SliderFloat("Transparency", &transparency, 0.1, 1);
+			ImGui::SliderFloat("Transparency", &transparency, 0.0, 1);
 			ImGui::TreePop();
 		}
 

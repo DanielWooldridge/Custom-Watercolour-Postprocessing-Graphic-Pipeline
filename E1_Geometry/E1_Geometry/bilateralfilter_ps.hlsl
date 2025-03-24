@@ -1,11 +1,11 @@
 Texture2D inputImage : register(t0);    // Input image texture
 Texture2D flowMap : register(t1);      // Flow map texture
-SamplerState samplerState : register(s0);
+SamplerState sampleType : register(s0);
 
 cbuffer FilterSettings : register(b0) {
     float spatial;  // Spatial kernel width 
-    float range;    // Range kernel width
-    int passing;            // 0 = horizontal, 1 = vertical
+    float rangeK;    // Range kernel width
+    int passing;    // 0 = horizontal, 1 = vertical
     float padding;
 };
 
@@ -17,69 +17,71 @@ struct InputType {
 float4 main(InputType input) : SV_TARGET {
     float2 texCoords = input.tex;
 
-    // Constants for Gaussian weights
+    // Compute Gaussian parameters
     float twoSpatialSigmaSquared = 2.0 * spatial * spatial;
-    float twoRangeSigmaSquared = 2.0 * range * range;
+    float twoRangeSigmaSquared = 2.0 * rangeK * rangeK;
 
     // Sample the flow map for tangent direction
-    float2 tangentFlow = flowMap.Sample(samplerState, texCoords).xy;
+    float2 tangentFlow = flowMap.Sample(sampleType, texCoords).xy;
 
-    // Adjust the direction based on pass (horizontal or vertical)
+    // Adjust direction based on pass (horizontal or vertical)
     float2 direction = (passing == 0)
         ? float2(tangentFlow.y, -tangentFlow.x)  // Rotate tangent 90° for horizontal pass
-        : tangentFlow;                         // Use tangent as-is for vertical pass
+        : tangentFlow;                           // Use tangent as-is for vertical pass
 
-    // Normalize the sampling step size
+    // Normalize sampling step size
     float2 absoluteDirection = abs(direction);
-    float stepLength = 1.0 / max(absoluteDirection.x, absoluteDirection.y);
-    direction *= stepLength;
+    float stepLength = 1.0 / max(absoluteDirection.x, absoluteDirection.y); // Prevent zero division
+    direction /= stepLength;
 
-    // Center pixel color for range weighting
-    float3 centerColor = inputImage.Sample(samplerState, texCoords).rgb;
+    // Get center pixel color for range weighting
+    float3 centerColor = inputImage.Sample(sampleType, texCoords).rgb;
 
-    // Initialize accumulators for weighted color and normalization factor
+    // Accumulators
     float3 weightedColorSum = centerColor;
     float normalizationFactor = 1.0;
 
-    // Define kernel radius (range of sampling)
-    float kernelRadius = 2.0 * spatial;
+    // Define integer kernel radius
+    float halfWidth = 2.0 * spatial;
+    int numIterations = int(ceil(halfWidth / stepLength)); // Ensure finite iterations
 
- 
-    // Bilateral filtering loop
-    //[unroll(62)]
-    for (int i = 1; i <=kernelRadius; i++) {
+    // Bilateral filtering loop with forced loop handling
+    [loop] 
+    for (int i = 1; i <= numIterations; i++) 
+    {
+        float off = i * stepLength;
 
-        float offset = i * stepLength;
+        // Compute offset coordinates
+        float2 posOffset = texCoords + direction * off;
+        float2 negOffset = texCoords - direction * off;
 
-        // Positive direction sample
-        float2 positiveOffset = texCoords + direction * offset;
-        float3 positiveColor = inputImage.Sample(samplerState, positiveOffset).rgb;
+        // Sample colors
+        float3 posColor = inputImage.Sample(sampleType, posOffset).rgb;
+        float3 negColor = inputImage.Sample(sampleType, negOffset).rgb;
 
-        // Negative direction sample
-        float2 negativeOffset = texCoords - direction * offset;
-        float3 negativeColor = inputImage.Sample(samplerState, negativeOffset).rgb;
+        // Compute range weights (color similarity)
+        float3 posDiff = posColor - centerColor;
+        float3 negDiff = negColor - centerColor;
+        float posRangeWeight = exp(-dot(posDiff, posDiff) / twoRangeSigmaSquared);
+        float negRangeWeight = exp(-dot(negDiff, negDiff) / twoRangeSigmaSquared);
 
-        // Range weight based on color similarity
-        float positiveRangeWeight = exp(-dot(positiveColor - centerColor, positiveColor - centerColor) / twoRangeSigmaSquared);
-        float negativeRangeWeight = exp(-dot(negativeColor - centerColor, negativeColor - centerColor) / twoRangeSigmaSquared);
+        // Compute spatial weight (distance-based)
+        float spatialWeight = exp(-off * off / twoSpatialSigmaSquared);
 
-        // Spatial weight based on distance from center
-        float spatialWeight = exp(-offset * offset / twoSpatialSigmaSquared);
-
-        // Combine weights
-        float positiveWeight = spatialWeight * positiveRangeWeight;
-        float negativeWeight = spatialWeight * negativeRangeWeight;
+        // Compute final weights
+        float posWeight = spatialWeight * posRangeWeight;
+        float negWeight = spatialWeight * negRangeWeight;
 
         // Accumulate weighted colors
-        weightedColorSum += positiveWeight * positiveColor;
-        weightedColorSum += negativeWeight * negativeColor;
+        weightedColorSum += posWeight * posColor;
+        weightedColorSum += negWeight * negColor;
 
         // Accumulate normalization factor
-        normalizationFactor += positiveWeight + negativeWeight;
+        normalizationFactor += posWeight + negWeight;
     }
 
-    // Compute final color by normalizing
-    float3 finalColor = weightedColorSum / normalizationFactor;
+    // Compute final color with normalization
+    float3 finalColor = weightedColorSum / max(normalizationFactor, 1e-6); // Prevent zero division
 
-    return float4(finalColor, 1.0);  // Output smoothed color
+    return float4(finalColor, 1.0); // Output smoothed color
 }

@@ -17,8 +17,10 @@ float4 main(InputType input) : SV_TARGET
     // Initialize the smoothed tensor result
     float3 smoothedTensor = float3(0.0, 0.0, 0.0);
 
-    // Texel size for horizontal smoothing
-    float2 texelSize = float2(1.0 / 1920.0, 0.0); // Horizontal only - Can just Sample and get .x
+    uint width, height;
+    img.GetDimensions(width, height);
+
+    float2 texelSize = 1.0 / float2(width, height);
 
     // Apply Gaussian weights to sample neighboring texels
     smoothedTensor += img.Sample(sampleType, uv + texelSize * float2(-2, 0)).xyz * weights[0];
@@ -30,7 +32,7 @@ float4 main(InputType input) : SV_TARGET
     // Output the smoothed tensor
     return float4(smoothedTensor, 1.0);
 
-
+    // Highly doubt this is the issue
 
 
    //return shaderTexture.Sample(sampleType, input.tex); // Directly output the input texture

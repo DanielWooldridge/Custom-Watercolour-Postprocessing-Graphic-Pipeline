@@ -97,7 +97,7 @@ float4 main(InputType input) : SV_TARGET
     float diff = 100.0 * (sum.x - tau * sum.y);
     diff = clamp(diff, 0.0, 1.0); // Clamp to range [0, 1]
 
-    float sobelOperation = ApplySobel(uv);
+
 
     // Output the result
     return float4(diff, diff, diff, 1.0);
