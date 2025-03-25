@@ -59,11 +59,22 @@ float4 main(InputType input) : SV_TARGET {
         float3 posColor = inputImage.Sample(sampleType, posOffset).rgb;
         float3 negColor = inputImage.Sample(sampleType, negOffset).rgb;
 
-        // Compute range weights (color similarity)
+         //Compute range weights (color similarity)
         float3 posDiff = posColor - centerColor;
         float3 negDiff = negColor - centerColor;
         float posRangeWeight = exp(-dot(posDiff, posDiff) / twoRangeSigmaSquared);
         float negRangeWeight = exp(-dot(negDiff, negDiff) / twoRangeSigmaSquared);
+
+        //// LUminance
+                
+        //float centerLuminance = dot(centerColor, float3(0.2126, 0.7152, 0.0722));
+        //float posLuminance = dot(posColor, float3(0.2126, 0.7152, 0.0722));
+        //float negLuminance = dot(negColor, float3(0.2126, 0.7152, 0.0722));
+
+        //// Compute luminance-based range weights
+        //float posRangeWeight = exp(-pow(posLuminance - centerLuminance, 2) / twoRangeSigmaSquared);
+        //float negRangeWeight = exp(-pow(negLuminance - centerLuminance, 2) / twoRangeSigmaSquared);
+
 
         // Compute spatial weight (distance-based)
         float spatialWeight = exp(-off * off / twoSpatialSigmaSquared);

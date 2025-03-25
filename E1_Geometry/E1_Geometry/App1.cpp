@@ -109,6 +109,8 @@ bool App1::Render()
 
 	FirstPass();
 
+	RGBToYCBCRPass();
+
 	GreyScalePass();
 
 	StructureTensorPass();
@@ -117,7 +119,7 @@ bool App1::Render()
 
 	VerticalSmoothingPass();
 
-	BilateralFilterPass(renderTexture, bilateralFilterTexture, true); 
+	BilateralFilterPass(ycbcrTexture, bilateralFilterTexture, true); 
 
 	BilateralFilterPass(bilateralFilterTexture, finalBilateralTexture, false); 
 
@@ -132,6 +134,8 @@ bool App1::Render()
 	CartoonRenderingPass();
 
 	PaperRenderingPass();
+
+	YCBCRToRGBPass();
 
 	TemporalPass();
 
@@ -300,6 +304,26 @@ void App1::FirstPass()
 
 }
 
+void App1::RGBToYCBCRPass()
+{
+	ycbcrTexture->setRenderTarget(renderer->getDeviceContext());
+	ycbcrTexture->clearRenderTarget(renderer->getDeviceContext(), 0, 0, 0, 1);
+
+	XMMATRIX worldMatrix = renderer->getWorldMatrix();
+	XMMATRIX viewMatrix = camera->getOrthoViewMatrix();
+	XMMATRIX orthoMatrix = ycbcrTexture->getOrthoMatrix();
+
+	renderer->setZBuffer(false);
+
+	orthoMesh->sendData(renderer->getDeviceContext());
+	rgbToYcbcrShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, orthoMatrix, renderTexture->getShaderResourceView());
+	rgbToYcbcrShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
+
+	renderer->setZBuffer(true);
+	renderer->setBackBufferRenderTarget();
+}
+
+
 void App1::GreyScalePass()
 {
 
@@ -320,7 +344,7 @@ void App1::GreyScalePass()
 	orthoMesh->sendData(renderer->getDeviceContext());
 
 	// Set shader parameters for the horizontal blur shader
-	greyscaleShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, baseViewMatrix, orthoMatrix, renderTexture->getShaderResourceView());
+	greyscaleShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, baseViewMatrix, orthoMatrix, ycbcrTexture->getShaderResourceView());
 
 	// Render using the horizontal blur shader
 	greyscaleShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
@@ -353,7 +377,7 @@ void App1::StructureTensorPass()
 	orthoMesh->sendData(renderer->getDeviceContext());
 
 	// Set shader parameters for the horizontal blur shader
-	structureTensorShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, baseViewMatrix, orthoMatrix, renderTexture->getShaderResourceView());
+	structureTensorShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, baseViewMatrix, orthoMatrix, ycbcrTexture->getShaderResourceView());
 
 	// Render using the horizontal blur shader
 	structureTensorShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
@@ -584,6 +608,25 @@ void App1::TemporalPass()
 	renderer->setZBuffer(true);
 }
 
+void App1::YCBCRToRGBPass()
+{
+	rgbTexture->setRenderTarget(renderer->getDeviceContext());
+	rgbTexture->clearRenderTarget(renderer->getDeviceContext(), 0, 0, 0, 1);
+
+	XMMATRIX worldMatrix = renderer->getWorldMatrix();
+	XMMATRIX viewMatrix = camera->getOrthoViewMatrix();
+	XMMATRIX orthoMatrix = rgbTexture->getOrthoMatrix();
+
+	renderer->setZBuffer(false);
+
+	orthoMesh->sendData(renderer->getDeviceContext());
+	ycbcrToRgbShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, orthoMatrix, colourQuantizationTexture->getShaderResourceView()); // <- Or whatever your final YCbCr texture is
+	ycbcrToRgbShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
+
+	renderer->setZBuffer(true);
+	renderer->setBackBufferRenderTarget();
+}
+
 void App1::ComparisonPass()
 {
 	// Set the comparison texture as the render target
@@ -649,6 +692,12 @@ void App1::ComparisonPass()
 		break;
 	case 14:
 		selectedResourceView = previousFrameTexture->getShaderResourceView();
+		break;
+	case 15:
+		selectedResourceView = ycbcrTexture->getShaderResourceView();
+		break;
+	case 16:
+		selectedResourceView = rgbTexture->getShaderResourceView();
 		break;
 	default:
 		selectedResourceView = renderTexture->getShaderResourceView();
@@ -740,6 +789,8 @@ void App1::InitialiseShaders(HINSTANCE hinstance, HWND hwnd, int screenWidth, in
 	paperShader = new PaperShader(renderer->getDevice(), hwnd);
 	depthShader = new DepthShader(renderer->getDevice(), hwnd);
 	temporalShader = new TemporalCoherence(renderer->getDevice(), hwnd);
+	rgbToYcbcrShader = new RGBToYCBCR(renderer->getDevice(), hwnd);
+	ycbcrToRgbShader = new YCBCRToRGB(renderer->getDevice(), hwnd);
 }
 
 void App1::InitialiseMeshs(int screenWidth, int screenHeight)
@@ -818,6 +869,8 @@ void App1::InitialiseRenderTextures(int screenWidth, int screenHeight)
 	depthTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 	blendedTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 	previousFrameTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
+	ycbcrTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
+	rgbTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 
 	for (int i = 0; i < STORED_FRAMES; i++)
 	{
@@ -884,7 +937,7 @@ void App1::GUI()
 		{
 			const char* textureOptions[] = { "Original Scene", "Bilateral Filter Texture", "Final Bilateral Texture", "Structure Tensor Texture", "Smoothed Flow Map Texture", 
 				"Smooth Structure Tensor (Horiz)", "DoG Filter", "Flow Curve Calc", "Dog Flow Texture", "Colour Quantization Texture", "Cartoon Rendering Texture",
-				"Paper Texure", "Depth Texture", "Temporal Texture", "Last Frame"};
+				"Paper Texure", "Depth Texture", "Temporal Texture", "Last Frame", "YCBCR", "RGB"};
 			ImGui::Combo("Output Texture", &selectedTexture, textureOptions, IM_ARRAYSIZE(textureOptions));
 			ImGui::TreePop();
 		}

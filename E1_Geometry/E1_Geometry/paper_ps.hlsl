@@ -22,25 +22,22 @@ float4 main(InputType input) : SV_TARGET
     float4 renderTexture = renderTex.Sample(sampleType, input.tex);
     float depthValue = depthTex.Sample(sampleType, input.tex).r;
 
-    // Convert depth to enhance contrast and control blending
+    // Clamp color values to [0, 1] to avoid weird artifacts
+    float3 baseColor = saturate(renderTexture.rgb);
+    float3 paperColor = saturate(paperTexture.rgb);
+
+    // Adjust depth for blending
     depthValue = pow(depthValue, 2.2);  
     depthValue = smoothstep(0.2, 0.8, depthValue);  
 
-    // dynamic blend due to distance
-    float dynamicBlend = blendStrength + (depthValue * depthFactor);
-    dynamicBlend = saturate(dynamicBlend); 
+    float dynamicBlend = saturate(blendStrength + (depthValue * depthFactor));
 
-    // Blend
-    float3 blendOverlay = (renderTexture.rgb < 0.5) 
-        ? (2.0 * renderTexture.rgb * paperTexture.rgb)  
-        : (1.0 - 2.0 * (1.0 - renderTexture.rgb) * (1.0 - paperTexture.rgb));
+    // Overlay blend
+    float3 blendOverlay = (baseColor < 0.5) 
+        ? (2.0 * baseColor * paperColor)  
+        : (1.0 - 2.0 * (1.0 - baseColor) * (1.0 - paperColor));
 
-    
-    float3 finalColor = lerp(renderTexture.rgb, blendOverlay, dynamicBlend);
+    float3 finalColor = lerp(baseColor, blendOverlay, dynamicBlend);
 
     return float4(finalColor, renderTexture.a);
 }
-
-// Randomize UV via depth to make it look 3D?
-// get tex
-// 

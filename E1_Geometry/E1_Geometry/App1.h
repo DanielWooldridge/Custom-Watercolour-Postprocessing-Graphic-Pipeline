@@ -25,7 +25,8 @@
 #include "DepthShader.h"
 #include "ArcBallCamera.h"
 #include "TemporalCoherence.h"
-
+#include "RGBToYCBCR.h"
+#include "YCBCRToRGB.h"
 
 class App1 : public BaseApplication
 {
@@ -41,6 +42,7 @@ protected:
 
 	void DepthPass();
 	void FirstPass();
+	void RGBToYCBCRPass();
 	void GreyScalePass();
 	void StructureTensorPass();
 	void HorizontalSmoothingPass();
@@ -54,6 +56,7 @@ protected:
 	void PaperRenderingPass();
 	void ComparisonPass();
 	void TemporalPass();
+	void YCBCRToRGBPass();
 	void FinalPass();
 	bool Render();
 
@@ -89,6 +92,8 @@ private:
 	PaperShader* paperShader;
 	DepthShader* depthShader;
 	TemporalCoherence* temporalShader;
+	RGBToYCBCR* rgbToYcbcrShader;
+	YCBCRToRGB* ycbcrToRgbShader;
 
 	//Mesh Declaration
 	PlaneMesh* floor;
@@ -118,6 +123,8 @@ private:
 	RenderTexture* paperRenderTexture;
 	RenderTexture* blendedTexture;
 	RenderTexture* previousFrameTexture;
+	RenderTexture* ycbcrTexture;
+	RenderTexture* rgbTexture;
 
 
 

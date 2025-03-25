@@ -4,10 +4,10 @@ SamplerState sampleType : register(s0);
 
 cbuffer dogBuffer
 {
-    float sensitivity;  // Sensitivity
-    float smoothing;  // Smoothing
-    float tau;      // Edge thresholding parameter
-    float2 texelSize; // Texel size 
+    float sensitivity;    // Edge spatial smoothing
+    float smoothing;      // Edge range smoothing
+    float tau;            // DoG contrast threshold
+    float2 texelSize;     // Texel size
     float pad[3];
 };
 
@@ -17,103 +17,62 @@ struct InputType
     float2 tex : TEXCOORD0;
 };
 
-float ApplySobel(float2 uv)
-{
-    float sampleValues[9];
-    float2 offsets[9] = {
-        float2(-1, -1), float2(0, -1), float2(1, -1),
-        float2(-1,  0), float2(0,  0), float2(1,  0),
-        float2(-1,  1), float2(0,  1), float2(1,  1)
-    };
-
-    // Sample DoG results
-    for (int i = 0; i < 9; i++)
-    {
-        float2 sampleUV = uv + offsets[i] * texelSize;
-        sampleValues[i] = img.Sample(sampleType, sampleUV).r;
-    }
-
-    // Sobel kernels
-    float SobelX[9] = { -1,  0,  1, -2,  0,  2, -1,  0,  1 };
-    float SobelY[9] = { -1, -2, -1,  0,  0,  0,  1,  2,  1 };
-
-    float Gx = 0, Gy = 0;
-    for (int i = 0; i < 9; i++)
-    {
-        Gx += sampleValues[i] * SobelX[i];
-        Gy += sampleValues[i] * SobelY[i];
-    }
-
-    // Compute final Sobel edge magnitude
-    float sobelEdge = sqrt(Gx * Gx + Gy * Gy);
-    sobelEdge = clamp(sobelEdge * 2.0, 0.0, 1.0);
-
-    return sobelEdge;
+// Standard luminance coefficients
+float luminance(float3 color) {
+    return dot(color, float3(0.2126, 0.7152, 0.0722));
 }
-
 
 float4 main(InputType input) : SV_TARGET
 {
-    float2 uv = input.tex;
-    uv = clamp(uv, 0.0, 1.0);
+    float2 uv = clamp(input.tex, 0.0, 1.0);
 
-
-    // Precompute sigma values
     float twoSigmaESquared = 2.0 * sensitivity * sensitivity;
     float twoSigmaRSquared = 2.0 * smoothing * smoothing;
 
-    // Load tangent field from texture
-    float2 t = flowmap.Sample(sampleType, uv).xy;
-    t = normalize(t); // Normalize tangent vector
+    float2 t = normalize(flowmap.Sample(sampleType, uv).xy);
+    if (any(isnan(t))) return float4(1, 0, 0, 1); // Debug: red = broken
 
-    // Initialize sums
-    float2 sum = 0.0;
-    float2 norm = 0.0;
+    float2 n = normalize(float2(t.y, -t.x)); // Perpendicular to tangent
+    float2 nabs = abs(n);
+    float ds = 1.0 / max(nabs.x, nabs.y);
+    n = n * ds / texelSize;
 
-    // Define the kernel half-width
+    float center = luminance(img.Sample(sampleType, uv).rgb);
+    float2 sum = float2(center, center);
+    float2 norm = float2(1.0, 1.0);
+
     float halfWidth = 2.0 * smoothing;
 
- 
-    // Perform filtering in 1D along the tangent direction
-    //[unroll(62)]
-    for (float d = -halfWidth; d <= halfWidth; d += 1.0)
+    [loop]
+    for (float d = ds; d <= halfWidth; d += ds)
     {
-       float2 kernel = float2(exp(-d * d / twoSigmaESquared), exp(-d * d / twoSigmaRSquared));
+        float2 kernel = float2(
+            exp(-d * d / twoSigmaESquared),
+            exp(-d * d / twoSigmaRSquared)
+        );
 
-        // Sample the image along the offset
-        float2 offset = d * t * texelSize;
-        float value = img.Sample(sampleType, uv + offset).r; // Luminance channel
+        float2 offset = d * n;
 
-        // Update the sums using the Gaussian weights
-        sum.x += value * kernel.x; // Spatial Gaussian weight
-        sum.y += value * kernel.y; // Range Gaussian weight
-        norm.x += kernel.x;
-        norm.y += kernel.y;
+        float2 sampleUV0 = clamp(uv + offset, 0.0, 1.0);
+        float2 sampleUV1 = clamp(uv - offset, 0.0, 1.0);
+
+        float value0 = luminance(img.Sample(sampleType, sampleUV0).rgb);
+        float value1 = luminance(img.Sample(sampleType, sampleUV1).rgb);
+
+        sum += kernel * (value0 + value1);
+        norm += 2.0 * kernel;
     }
 
-    sum /= norm; // Normalize the accumulated values
+    // Normalize
+    sum /= norm;
 
-    // Compute the Difference of Gaussians
-    float diff = 100.0 * (sum.x - tau * sum.y);
-    diff = clamp(diff, 0.0, 1.0); // Clamp to range [0, 1]
+    // Compute edge difference
+    float diff = 10.0 * (sum.x - tau * sum.y) * smoothing;
+    diff = clamp(diff, 0.0, 1.0);
 
+    // Posterization (optional but nice)
+    float levels = 5.0; 
+    diff = floor(diff * (levels - 1.0) + 0.5) / (levels - 1.0);
 
-
-    // Output the result
-    return float4(diff, diff, diff, 1.0);
-
-    //With Sobel
-    //return float4(sobelOperation, sobelOperation, sobelOperation, 1.0);
-    // Should show gradient colors
-
-
-   //float testValue = img.Sample(sampleType, uv).r;
-   // return float4(testValue, testValue, testValue, 1.0); // Should show grayscale DoG image
-
-    //float DoG = img.Sample(sampleType, uv).r; 
-    //return float4(DoG, DoG, DoG, 1.0);
-
-
-    //float value = img.Sample(sampleType, uv).r;
-    //return float4(value, value, value, 1.0);
+    return float4(diff.xxx, 1.0); // Output grayscale
 }

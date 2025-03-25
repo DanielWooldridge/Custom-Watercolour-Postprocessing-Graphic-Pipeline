@@ -1,41 +1,32 @@
 Texture2D img : register(t0);
 SamplerState sampleType : register(s0);
 
-cbuffer cqBuffer : register(b1)
-{
-    float transitionSmoothing;
-    float quantLevel;
-    float2 padding;
-}
-
-struct InputType
-{
+struct InputType {
     float4 position : SV_POSITION;
     float2 tex : TEXCOORD0;
 };
 
-float4 main(InputType input) : SV_TARGET
-{
-    
-    // Sample color from input texture
-    float4 colour = img.Sample(sampleType, input.tex);
+// HARD-CODED PARAMS
+static const int NUM_BINS = 8;           // Number of quantization levels
+static const float PHI_Q = 3.4f;         // Smooth transition factor
 
-    // Number of quantization levels (e.g., 10)
-    float numLevels = 10;
+float4 main(InputType input) : SV_TARGET {
+    // Sample the YCbCr color
+    float3 ycbcr = img.Sample(sampleType, input.tex).rgb;
 
-    // Floor the color to the nearest level
-    float3 qn = floor(colour * numLevels + 0.5) / numLevels;
+    // Extract Y (luma)
+    float y = ycbcr.x;
 
-    // Apply smoothstep to soften transitions
-    float3 qs = smoothstep(-2.0, 2.0, transitionSmoothing * (colour - qn) * 100.0) - 0.5;
-    float3 qc = qn + qs / numLevels;
+    // Hard quantization step
+    float qY = floor(y * NUM_BINS + 0.5) / NUM_BINS;
 
-  
+    // Smoothstep softens banding
+    float smoothY = smoothstep(-2.0, 2.0, PHI_Q * (y - qY) * 100.0) - 0.5;
+    float quantY = qY + smoothY / NUM_BINS;
 
-    //return float4(1, 0, 0, 1);  // Red output
-    //return colour;
+    // Combine quantized Y with original CbCr
+    float3 quantYCbCr = float3(quantY, ycbcr.yz);
 
-    //return img.Sample(sampleType, input.tex); // Directly output the texture color
-    return float4(qn, 1.0);  // This should give you blocky colors
-
+    // Optional: saturate just in case
+    return float4(saturate(quantYCbCr), 1.0);
 }
