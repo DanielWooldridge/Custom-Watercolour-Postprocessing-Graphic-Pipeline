@@ -21,21 +21,19 @@ float4 main(InputType input) : SV_TARGET
     //float4 colourQuant = cqImg.Sample(sampleType, input.tex);
     //float4 result = 1 - (1 - colourQuant) * (1 - dogFlow); // Screen blending
 
-    float4 dogFlow = dfImg.Sample(sampleType, input.tex);
-    float edge = dogFlow.r; // grayscale from luminance-based DoG
+    float edge = dfImg.Sample(sampleType, input.tex).r;      // edge strength
+    float3 ycbcr = cqImg.Sample(sampleType, input.tex).rgb;   // original quantized YCbCr
 
-    float4 colourQuant = cqImg.Sample(sampleType, input.tex);
+    // Boost or clamp the edge so it doesn’t kill all luminance
+    edge = lerp(0.5, 1.0, edge);  // prevent too-dark shading
 
-    // Optional edge sharpening
-    edge = smoothstep(0.2, 1.0, edge); // tweak threshold here
+    float y = saturate(edge * ycbcr.r);
+    y = max(y, 0.1);  // ensure Y doesn’t collapse
 
-    // Edge inversion (dark lines), but less aggressive
-    float blend = lerp(1.0, 0.3, edge);  // 0.3 is "how dark" the edges go
+    return float4(y, ycbcr.g, ycbcr.b, 1.0);
 
-    // Final blending
-    float4 result = colourQuant * blend;
 
-    return result;
+
 
 
 

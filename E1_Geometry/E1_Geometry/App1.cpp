@@ -127,7 +127,7 @@ bool App1::Render()
 
 	FlowCurvePass();
 
-	DoGFlowPass();
+	//DoGFlowPass();
 
 	ColourQuantizationPass();
 
@@ -620,7 +620,7 @@ void App1::YCBCRToRGBPass()
 	renderer->setZBuffer(false);
 
 	orthoMesh->sendData(renderer->getDeviceContext());
-	ycbcrToRgbShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, orthoMatrix, colourQuantizationTexture->getShaderResourceView()); // <- Or whatever your final YCbCr texture is
+	ycbcrToRgbShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, orthoMatrix, cartoonRenderTexture->getShaderResourceView()); // <- Or whatever your final YCbCr texture is
 	ycbcrToRgbShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
 
 	renderer->setZBuffer(true);
@@ -828,9 +828,9 @@ void App1::InitialiseVariables(int screenWidth, int screenHeight)
 	texelSize = XMFLOAT2(1.0f / screenWidth, 1.0f / screenHeight);
 
 	currentPosition = XMFLOAT2(0.5f, 0.5f);
-	previousTan = XMFLOAT2(1.0f, -0.3f);
+	previousTan = XMFLOAT2(0.5f, -0.3f);
 	totLength = 0.0f;
-	curLength = 1.0f;
+	curLength = 0.5f;
 
 	dogFlowThreshold = 1.0f;
 	dogFlowSmoothing = 1.5f;

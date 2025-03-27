@@ -1,11 +1,11 @@
-Texture2D img : register(t0);  // First DoG pass texture
-Texture2D tfm : register(t1);  // Flow Curve texture 
+Texture2D img : register(t0);       // First DoG pass texture (grayscale edge map)
+Texture2D tfm : register(t1);       // Tangent flow map (XY direction)
 SamplerState sampleType : register(s0);
 
 cbuffer DoGFlowBuffer : register(b1)
 {
-    float sigma_m;
-    float phi;
+    float sigma_m;    // Flow integration scale
+    float phi;        // Threshold shaping
 };
 
 struct InputType
@@ -18,45 +18,47 @@ float4 main(InputType input) : SV_TARGET
 {
     float2 uv = input.tex;
 
-    // Get direction from flow curve texture
-    float2 tangent = normalize(tfm.Sample(sampleType, uv).xy);
-   // if (dot(tangent, tangent) == 0.0) return float4(0, 0, 0, 1); 
+    // Read and normalize flow direction
+    float2 tangent = tfm.Sample(sampleType, uv).xy;
+    tangent = normalize(tangent);
 
-    // 1st Dog Pass edge intensity
-    float H = img.Sample(sampleType, uv).x;
-    float weight = 1.0;
-    
-    // RAnge of integration along the flow curve
-    // Mess with these numbers
+    // Early out if tangent is invalid
+    if (dot(tangent, tangent) < 0.0001)
+        return float4(1.0, 0.0, 0.0, 1.0); // Debug: red = bad flow
+
+    // Parameters
     float sigmaSq = 2.0 * sigma_m * sigma_m;
-    float stepSize = 1.0 / 50.0;  
-    float halfWidth = 2.0 * sigma_m;
+    float stepSize = 1.0 / 200.0;
+    int maxSteps = 20;
+    float halfWidth = stepSize * maxSteps;
 
+    // Base sample
+    float H = img.Sample(sampleType, uv).r;
     float sum = H;
+    float weight = 1.0;
 
-    [loop]  // Makes it loop
-    for (int i = 0; i < 30 && i * stepSize < halfWidth; i++)
+    // Integrate along the flow in both directions
+    [loop]
+    for (int i = 1; i <= maxSteps; ++i)
     {
         float t = i * stepSize;
+        float w = exp(-t * t / sigmaSq);
 
-        // Both directions along the flow curve
-        float2 samplePos1 = uv + tangent * t;
-        float2 samplePos2 = uv - tangent * t; 
+        float2 offset = tangent * t;
+        float2 pos1 = clamp(uv + offset, 0.0, 1.0);
+        float2 pos2 = clamp(uv - offset, 0.0, 1.0);
 
-        float sampleH1 = img.Sample(sampleType, samplePos1).x;
-        float sampleH2 = img.Sample(sampleType, samplePos2).x;
+        float h1 = img.Sample(sampleType, pos1).r;
+        float h2 = img.Sample(sampleType, pos2).r;
 
-        // Create weight based on Gaussians
-        float weightFactor = exp(-t * t / sigmaSq);
-        sum += weightFactor * (sampleH1 + sampleH2);
-        weight += 2.0 * weightFactor;
+        sum += w * (h1 + h2);
+        weight += 2.0 * w;
     }
 
-    
     H = sum / weight;
 
-    // Thresholding
+    // Thresholding (in GLSL it's contrast mapped)
     float edge = smoothstep(-phi, phi, H);
-    
-    return float4(edge, edge, edge, 1.0);
+
+    return float4(edge.xxx, 1.0);
 }
