@@ -191,11 +191,15 @@ private:
 
 	int frameCount = 0;
 
+
+
 	//Overarching Vairables
 	float totalTime;
 	ID3D11ShaderResourceView* skyMapTextures[6];
 	ID3D11RasterizerState* skyboxRasterizerState;
 	ID3D11ShaderResourceView* skyboxTexture;
+	float bf_edge;
+	float bf_abstraction;
 
 	ID3D11ShaderResourceView* paperTexture;
 

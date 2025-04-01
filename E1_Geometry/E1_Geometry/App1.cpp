@@ -104,47 +104,55 @@ bool App1::frame()
 
 bool App1::Render()
 {
-	
-	DepthPass();
+	DepthPass();                   // Optional
 
-	FirstPass();
+	FirstPass();                  // Scene render
+	RGBToYCBCRPass();             // Step 1
+	GreyScalePass();              // Step 2
 
-	RGBToYCBCRPass();
-
-	GreyScalePass();
-
+	// Step 3: Structure Tensor
 	StructureTensorPass();
+	HorizontalSmoothingPass();    // SST1
+	VerticalSmoothingPass();      // SST2
 
-	HorizontalSmoothingPass();
+	// Step 4: Pre-edge abstraction (bf_ne = 1)
+	for (int i = 0; i < bf_edge; ++i)
+	{
+		BilateralFilterPass(ycbcrTexture, bilateralFilterTexture, true);   // Pass 0
+		BilateralFilterPass(bilateralFilterTexture, finalBilateralTexture, false);  // Pass 1
+	}
 
-	VerticalSmoothingPass();
-
-	BilateralFilterPass(ycbcrTexture, bilateralFilterTexture, true); 
-
-	BilateralFilterPass(bilateralFilterTexture, finalBilateralTexture, false); 
-
+	// Step 5: DoG edge detection
 	DoGFilterPass();
 
+	// Step 6: Flow curve smoothing / integration
 	FlowCurvePass();
 
-	//DoGFlowPass();
+	// Step 7: Post-edge abstraction (bf_na - bf_ne = 3)
+	for (int i = 0; i < bf_abstraction; ++i)
+	{
+		BilateralFilterPass(finalBilateralTexture, bilateralFilterTexture, true);  // horizontal
+		BilateralFilterPass(bilateralFilterTexture, finalBilateralTexture, false); // vertical
+	}
 
+	// Step 8: CQ + DoG Combine
 	ColourQuantizationPass();
 
+	// Optional stylized shading (if needed)
 	CartoonRenderingPass();
 
+	// Step 9: Paper texture overlay
 	PaperRenderingPass();
 
+	// Final conversions and presentation
 	YCBCRToRGBPass();
-
 	TemporalPass();
-
 	ComparisonPass();
-	
 	FinalPass();
 
 	return true;
 }
+
 
 
 void App1::DepthPass()
@@ -848,6 +856,9 @@ void App1::InitialiseVariables(int screenWidth, int screenHeight)
 
 	useArcball = false;
 
+	bf_edge = 1.f;
+	bf_abstraction = 3.f;
+
 }
 
 void App1::InitialiseRenderTextures(int screenWidth, int screenHeight)
@@ -983,6 +994,12 @@ void App1::GUI()
 			ImGui::SliderFloat("Canvas Strength", &paperStrength, 0.0f, 1.0f);
 			ImGui::SliderFloat("Depth influence", &depthFactor, 0.0f, 1.0f); 
 			
+			ImGui::TreePop();
+		}
+		if (ImGui::TreeNode("Number of filters"))
+		{
+			ImGui::SliderFloat("Bilfteral filters - edge", &bf_edge, 1.0f, 3.0f);
+			ImGui::SliderFloat("Bilateral filters - abstraction", &bf_abstraction, 1.0f, 5.0f);
 			ImGui::TreePop();
 		}
 		ImGui::TreePop();
