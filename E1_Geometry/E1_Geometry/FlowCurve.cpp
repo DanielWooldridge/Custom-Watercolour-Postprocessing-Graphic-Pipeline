@@ -71,7 +71,7 @@ void FlowCurve::initShader(const wchar_t* vsFilename, const wchar_t* psFilename)
 
 
 void FlowCurve::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX& worldMatrix, const XMMATRIX& viewMatrix, const XMMATRIX& projectionMatrix, 
-	ID3D11ShaderResourceView* inputTexture, XMFLOAT2 currentPosition, XMFLOAT2 previousTan, float totLength, float curLength)
+	ID3D11ShaderResourceView* inputTexture, ID3D11ShaderResourceView* dogTexture, XMFLOAT2 currentPosition, XMFLOAT2 previousTan, float totLength, float curLength)
 {
 	HRESULT result;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -102,6 +102,7 @@ void FlowCurve::setShaderParameters(ID3D11DeviceContext* deviceContext, const XM
 	deviceContext->PSSetConstantBuffers(0, 1, &fCurveBuffer);
 	deviceContext->PSSetSamplers(0, 1, &sampleState);
 	// Are we not sampling the texture?
-	//deviceContext->PSSetShaderResources(0, 1, &inputTexture); // huh? It looks worse lol
+	deviceContext->PSSetShaderResources(0, 1, &inputTexture); 
+	deviceContext->PSSetShaderResources(1, 1, &dogTexture); 
 }
 

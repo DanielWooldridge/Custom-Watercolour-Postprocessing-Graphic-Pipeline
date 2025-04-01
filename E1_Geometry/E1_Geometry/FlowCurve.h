@@ -7,7 +7,7 @@ public:
 	~FlowCurve();
 
 	void setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX& worldMatrix, const XMMATRIX& viewMatrix, const XMMATRIX& projectionMatrix,
-		ID3D11ShaderResourceView* inputTexture, XMFLOAT2 currentPosition, XMFLOAT2 previousTan, float totLength, float curLength);
+		ID3D11ShaderResourceView* inputTexture, ID3D11ShaderResourceView* dogTexture, XMFLOAT2 currentPosition, XMFLOAT2 previousTan, float totLength, float curLength);
 
 	struct FlowCurveFilterType
 	{

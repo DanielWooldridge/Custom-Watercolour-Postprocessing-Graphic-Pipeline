@@ -490,33 +490,33 @@ void App1::FlowCurvePass()
 
 	orthoMesh->sendData(renderer->getDeviceContext());
 	//std::cout << "Previous Tan: (" << previousTan.x << ", " << previousTan.y << ")\n";
-	flowCurveShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, verticalBlurTexture->getShaderResourceView(), currentPosition, previousTan, totLength, curLength);
+	flowCurveShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, verticalBlurTexture->getShaderResourceView(), dogFilterTexture->getShaderResourceView(), currentPosition, previousTan, totLength, curLength);
 	flowCurveShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
 
 	renderer->setZBuffer(true);
 }
 
-void App1::DoGFlowPass()
-{
-	dogFlowTexture->setRenderTarget(renderer->getDeviceContext());
-	dogFlowTexture->clearRenderTarget(renderer->getDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
-
-	XMMATRIX worldMatrix = renderer->getWorldMatrix();
-	XMMATRIX orthoMatrix = dogFlowTexture->getOrthoMatrix();
-	XMMATRIX orthoViewMatrix = camera->getOrthoViewMatrix();
-
-	renderer->setZBuffer(false);
-
-	orthoMesh->sendData(renderer->getDeviceContext());
-	
-	dogFlowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, dogFilterTexture->getShaderResourceView(),  flowCurveTexture->getShaderResourceView(), // Flow Map Texture
-	dogFlowSmoothing, dogFlowThreshold);
-	dogFlowShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
-
-	renderer->setZBuffer(true);
-
-
-}
+//void App1::DoGFlowPass()
+//{
+//	dogFlowTexture->setRenderTarget(renderer->getDeviceContext());
+//	dogFlowTexture->clearRenderTarget(renderer->getDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
+//
+//	XMMATRIX worldMatrix = renderer->getWorldMatrix();
+//	XMMATRIX orthoMatrix = dogFlowTexture->getOrthoMatrix();
+//	XMMATRIX orthoViewMatrix = camera->getOrthoViewMatrix();
+//
+//	renderer->setZBuffer(false);
+//
+//	orthoMesh->sendData(renderer->getDeviceContext());
+//	
+//	dogFlowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, dogFilterTexture->getShaderResourceView(),  flowCurveTexture->getShaderResourceView(), // Flow Map Texture
+//	dogFlowSmoothing, dogFlowThreshold);
+//	dogFlowShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
+//
+//	renderer->setZBuffer(true);
+//
+//
+//}
 
 void App1::ColourQuantizationPass()
 {
@@ -550,7 +550,7 @@ void App1::CartoonRenderingPass()
 	renderer->setZBuffer(false);
 
 	orthoMesh->sendData(renderer->getDeviceContext());
-	cartoonShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, dogFilterTexture->getShaderResourceView(), colourQuantizationTexture->getShaderResourceView());
+	cartoonShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, flowCurveTexture->getShaderResourceView(), colourQuantizationTexture->getShaderResourceView());
 	cartoonShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
 
 	renderer->setZBuffer(true);
