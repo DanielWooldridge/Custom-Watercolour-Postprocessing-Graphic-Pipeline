@@ -2,7 +2,7 @@
 
 Watercolour::Watercolour(ID3D11Device* device, HWND hwnd) : BaseShader(device, hwnd)
 {
-	initShader(L"structureTensor_vs.cso", L"structureTensor_ps.cso");
+	initShader(L"standard_vs.cso", L"structureTensor_ps.cso");
 }
 
 Watercolour::~Watercolour()

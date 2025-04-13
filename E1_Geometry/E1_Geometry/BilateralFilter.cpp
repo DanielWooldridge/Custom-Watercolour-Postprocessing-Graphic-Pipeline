@@ -2,7 +2,7 @@
 
 BilateralFilter::BilateralFilter(ID3D11Device* device, HWND hwnd) : BaseShader(device, hwnd)
 {
-    initShader(L"bilateralfilter_vs.cso", L"bilateralfilter_ps.cso");
+    initShader(L"standard_vs.cso", L"bilateralfilter_ps.cso");
 }
 
 BilateralFilter::~BilateralFilter()

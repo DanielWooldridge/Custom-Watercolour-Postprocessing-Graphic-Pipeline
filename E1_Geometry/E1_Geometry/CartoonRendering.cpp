@@ -2,7 +2,7 @@
 
 CartoonRendering::CartoonRendering(ID3D11Device* device, HWND hwnd) : BaseShader(device, hwnd)
 {
-	initShader(L"cartoon_rendering_vs.cso", L"cartoon_rendering_ps.cso");
+	initShader(L"standard_vs.cso", L"cartoon_rendering_ps.cso");
 }
 
 CartoonRendering::~CartoonRendering()

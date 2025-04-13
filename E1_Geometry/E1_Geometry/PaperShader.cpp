@@ -2,7 +2,7 @@
 
 PaperShader::PaperShader(ID3D11Device* device, HWND hwnd) : BaseShader(device, hwnd)
 {
-	initShader(L"paper_vs.cso", L"paper_ps.cso");
+	initShader(L"standard_vs.cso", L"paper_ps.cso");
 }
 
 PaperShader::~PaperShader()

@@ -17,7 +17,6 @@
 #include "BilateralFilter.h"
 #include "DifferenceOfGuassian.h"
 #include "FlowCurve.h"
-#include "DoG_via_FlowCurve.h"
 #include "ColourQuantization.h"
 #include "CartoonRendering.h"
 #include "PaperShader.h"

@@ -13,58 +13,64 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Source Files\Cartoon Rendering">
-      <UniqueIdentifier>{21901ff5-a68e-4fa0-946f-17b74bcbb877}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Scene">
       <UniqueIdentifier>{14e64a0d-8012-4e55-82db-eec4ae181b3c}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\Tools">
       <UniqueIdentifier>{66368127-8c6f-4fd9-9460-44b8a86e5069}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\Vertex shaders">
+      <UniqueIdentifier>{99675f6d-2444-40da-955d-cf88cf3bf2f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Pixel shaders">
+      <UniqueIdentifier>{9c378a12-11f2-411c-80d1-9e9c0452f8d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Watercolour Rendering">
+      <UniqueIdentifier>{86479d56-5a3f-43ad-8b87-9ca5d63a3c27}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Watercolour Rendering">
+      <UniqueIdentifier>{21901ff5-a68e-4fa0-946f-17b74bcbb877}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Scene">
+      <UniqueIdentifier>{5df125c7-65af-4663-b531-d99089bdf855}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Tools">
+      <UniqueIdentifier>{8c7b95bd-8fee-4487-8902-4fb4c98179ce}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="App1.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ColourTriangle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GreyScale.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="BilateralFilter.cpp">
-      <Filter>Source Files\Cartoon Rendering</Filter>
+      <Filter>Source Files\Watercolour Rendering</Filter>
     </ClCompile>
     <ClCompile Include="CartoonRendering.cpp">
-      <Filter>Source Files\Cartoon Rendering</Filter>
+      <Filter>Source Files\Watercolour Rendering</Filter>
     </ClCompile>
     <ClCompile Include="ColourQuantization.cpp">
-      <Filter>Source Files\Cartoon Rendering</Filter>
+      <Filter>Source Files\Watercolour Rendering</Filter>
     </ClCompile>
     <ClCompile Include="DifferenceOfGuassian.cpp">
-      <Filter>Source Files\Cartoon Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="DoG_via_FlowCurve.cpp">
-      <Filter>Source Files\Cartoon Rendering</Filter>
+      <Filter>Source Files\Watercolour Rendering</Filter>
     </ClCompile>
     <ClCompile Include="FlowCurve.cpp">
-      <Filter>Source Files\Cartoon Rendering</Filter>
+      <Filter>Source Files\Watercolour Rendering</Filter>
     </ClCompile>
     <ClCompile Include="HorizontalBlur.cpp">
-      <Filter>Source Files\Cartoon Rendering</Filter>
+      <Filter>Source Files\Watercolour Rendering</Filter>
     </ClCompile>
     <ClCompile Include="PaperShader.cpp">
-      <Filter>Source Files\Cartoon Rendering</Filter>
+      <Filter>Source Files\Watercolour Rendering</Filter>
     </ClCompile>
     <ClCompile Include="StructureTensor.cpp">
-      <Filter>Source Files\Cartoon Rendering</Filter>
+      <Filter>Source Files\Watercolour Rendering</Filter>
     </ClCompile>
     <ClCompile Include="VerticalBlur.cpp">
-      <Filter>Source Files\Cartoon Rendering</Filter>
+      <Filter>Source Files\Watercolour Rendering</Filter>
     </ClCompile>
     <ClCompile Include="TextureShader.cpp">
       <Filter>Source Files\Scene</Filter>
@@ -84,207 +90,192 @@
     <ClCompile Include="DepthShader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ArcBallCamera.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="TemporalCoherence.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ArcBallCamera.cpp">
+      <Filter>Source Files\Tools</Filter>
+    </ClCompile>
     <ClCompile Include="RGBToYCBCR.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Watercolour Rendering</Filter>
     </ClCompile>
     <ClCompile Include="YCBCRToRGB.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Watercolour Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="App1.cpp">
+      <Filter>Source Files\Scene</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="App1.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TextureShader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ColourTriangle.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GreyScale.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CompSlider.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MovementShader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="StructureTensor.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Skybox.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="OceanShader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="HorizontalBlur.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VerticalBlur.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="BilateralFilter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DifferenceOfGuassian.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FlowCurve.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DoG_via_FlowCurve.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ColourQuantization.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CartoonRendering.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PaperShader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DepthShader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ArcBallCamera.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="TemporalCoherence.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="BilateralFilter.h">
+      <Filter>Header Files\Watercolour Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="CartoonRendering.h">
+      <Filter>Header Files\Watercolour Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="ColourQuantization.h">
+      <Filter>Header Files\Watercolour Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="DifferenceOfGuassian.h">
+      <Filter>Header Files\Watercolour Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="FlowCurve.h">
+      <Filter>Header Files\Watercolour Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="HorizontalBlur.h">
+      <Filter>Header Files\Watercolour Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="PaperShader.h">
+      <Filter>Header Files\Watercolour Rendering</Filter>
+    </ClInclude>
     <ClInclude Include="RGBToYCBCR.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Watercolour Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="StructureTensor.h">
+      <Filter>Header Files\Watercolour Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="VerticalBlur.h">
+      <Filter>Header Files\Watercolour Rendering</Filter>
     </ClInclude>
     <ClInclude Include="YCBCRToRGB.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Watercolour Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="MovementShader.h">
+      <Filter>Header Files\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="OceanShader.h">
+      <Filter>Header Files\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureShader.h">
+      <Filter>Header Files\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Skybox.h">
+      <Filter>Header Files\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ArcBallCamera.h">
+      <Filter>Header Files\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="CompSlider.h">
+      <Filter>Header Files\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="App1.h">
+      <Filter>Header Files\Scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="shaders\texture_ps.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="shaders\texture_vs.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="greyscale_vs.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="greyscale_ps.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="compslider_vs.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="compslider_ps.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="movement_vs.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="movement_ps.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="structureTensor_vs.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="structureTensor_ps.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="skybox_ps.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="skybox_vs.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="ocean_vs.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="ocean_ps.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="horizontalblur_ps.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="horizontalblur_vs.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="verticalblur_vs.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="verticalblur_ps.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="bilateralfilter_vs.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
     <FxCompile Include="bilateralfilter_ps.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="dogfiltering_vs.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="dogfiltering_ps.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="flowcurve_vs.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="flowcurve_ps.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="dogflow_ps.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="dogflow_vs.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="colour_quantization_ps.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="colour_quantization_vs.hlsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Pixel shaders</Filter>
     </FxCompile>
     <FxCompile Include="cartoon_rendering_ps.hlsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Pixel shaders</Filter>
     </FxCompile>
-    <FxCompile Include="cartoon_rendering_vs.hlsl">
-      <Filter>Resource Files</Filter>
+    <FxCompile Include="colour_quantization_ps.hlsl">
+      <Filter>Resource Files\Pixel shaders</Filter>
     </FxCompile>
-    <FxCompile Include="paper_ps.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="paper_vs.hlsl">
-      <Filter>Resource Files</Filter>
+    <FxCompile Include="compslider_ps.hlsl">
+      <Filter>Resource Files\Pixel shaders</Filter>
     </FxCompile>
     <FxCompile Include="depth_ps.hlsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Pixel shaders</Filter>
     </FxCompile>
-    <FxCompile Include="depth_vs.hlsl">
-      <Filter>Resource Files</Filter>
+    <FxCompile Include="dogfiltering_ps.hlsl">
+      <Filter>Resource Files\Pixel shaders</Filter>
     </FxCompile>
-    <FxCompile Include="temporal_vs.hlsl">
-      <Filter>Resource Files</Filter>
+    <FxCompile Include="flowcurve_ps.hlsl">
+      <Filter>Resource Files\Pixel shaders</Filter>
     </FxCompile>
-    <FxCompile Include="temporal_ps.hlsl">
-      <Filter>Resource Files</Filter>
+    <FxCompile Include="horizontalblur_ps.hlsl">
+      <Filter>Resource Files\Pixel shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="movement_ps.hlsl">
+      <Filter>Resource Files\Pixel shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="ocean_ps.hlsl">
+      <Filter>Resource Files\Pixel shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="paper_ps.hlsl">
+      <Filter>Resource Files\Pixel shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="skybox_ps.hlsl">
+      <Filter>Resource Files\Pixel shaders</Filter>
     </FxCompile>
     <FxCompile Include="rgb_to_ycbcr_ps.hlsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Pixel shaders</Filter>
     </FxCompile>
-    <FxCompile Include="standard_vs.hlsl">
-      <Filter>Resource Files</Filter>
+    <FxCompile Include="structureTensor_ps.hlsl">
+      <Filter>Resource Files\Pixel shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="temporal_ps.hlsl">
+      <Filter>Resource Files\Pixel shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="verticalblur_ps.hlsl">
+      <Filter>Resource Files\Pixel shaders</Filter>
     </FxCompile>
     <FxCompile Include="ycbcr_to_rgb_ps.hlsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Pixel shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="shaders\texture_ps.hlsl">
+      <Filter>Resource Files\Pixel shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="bilateralfilter_vs.hlsl">
+      <Filter>Resource Files\Vertex shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="cartoon_rendering_vs.hlsl">
+      <Filter>Resource Files\Vertex shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="colour_quantization_vs.hlsl">
+      <Filter>Resource Files\Vertex shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="compslider_vs.hlsl">
+      <Filter>Resource Files\Vertex shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="depth_vs.hlsl">
+      <Filter>Resource Files\Vertex shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="dogfiltering_vs.hlsl">
+      <Filter>Resource Files\Vertex shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="flowcurve_vs.hlsl">
+      <Filter>Resource Files\Vertex shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="horizontalblur_vs.hlsl">
+      <Filter>Resource Files\Vertex shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="movement_vs.hlsl">
+      <Filter>Resource Files\Vertex shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="ocean_vs.hlsl">
+      <Filter>Resource Files\Vertex shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="paper_vs.hlsl">
+      <Filter>Resource Files\Vertex shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="skybox_vs.hlsl">
+      <Filter>Resource Files\Vertex shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="standard_vs.hlsl">
+      <Filter>Resource Files\Vertex shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="structureTensor_vs.hlsl">
+      <Filter>Resource Files\Vertex shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="temporal_vs.hlsl">
+      <Filter>Resource Files\Vertex shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="shaders\texture_vs.hlsl">
+      <Filter>Resource Files\Vertex shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="verticalblur_vs.hlsl">
+      <Filter>Resource Files\Vertex shaders</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

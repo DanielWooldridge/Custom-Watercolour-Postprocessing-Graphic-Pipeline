@@ -2,7 +2,7 @@
 
 DifferenceOfGuassian::DifferenceOfGuassian(ID3D11Device* device, HWND hwnd) : BaseShader(device, hwnd)
 {
-	initShader(L"dogfiltering_vs.cso", L"dogfiltering_ps.cso");
+	initShader(L"standard_vs.cso", L"dogfiltering_ps.cso");
 }
 
 DifferenceOfGuassian::~DifferenceOfGuassian()

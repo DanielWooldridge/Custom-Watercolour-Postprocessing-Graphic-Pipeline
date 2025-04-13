@@ -4,7 +4,7 @@
 
 TemporalCoherence::TemporalCoherence(ID3D11Device* device, HWND hwnd) : BaseShader(device, hwnd)
 {
-	initShader(L"temporal_vs.cso", L"temporal_ps.cso");
+	initShader(L"standard_vs.cso", L"temporal_ps.cso");
 }
 
 TemporalCoherence::~TemporalCoherence()

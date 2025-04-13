@@ -2,7 +2,7 @@
 
 HorizontalBlur::HorizontalBlur(ID3D11Device* device, HWND hwnd) : BaseShader(device, hwnd)
 {
-	initShader(L"horizontalblur_vs.cso", L"horizontalblur_ps.cso");
+	initShader(L"standard_vs.cso", L"horizontalblur_ps.cso");
 }
 
 HorizontalBlur::~HorizontalBlur()
