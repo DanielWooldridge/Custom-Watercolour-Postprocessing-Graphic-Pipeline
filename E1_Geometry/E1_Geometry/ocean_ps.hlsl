@@ -14,12 +14,7 @@ cbuffer WaveParamsBuffer : register(b1)
     float padding;
 };
 
-cbuffer DirectionalLightBuffer : register(b2)
-{
-    float4 diffuseLight;        // Diffuse light color
-	float3 direction;      // Direction of the light
-	float pad;
-}; 
+
 
 
 struct InputType
@@ -31,14 +26,6 @@ struct InputType
 
 
 
-// Calculate lighting intensity based on direction and normal. Combine with light colour.
-float4 calculateLighting(float3 lightDirection, float3 normal, float4 diffuse)
-{
-    float intensity = saturate(dot(normal, lightDirection));
-    float4 colour = saturate(diffuse * intensity);
-    return colour;
-}
-
 float4 main(InputType input) : SV_TARGET
 {
 
@@ -46,24 +33,5 @@ float4 main(InputType input) : SV_TARGET
     float4 textureColor = mtexture.Sample(msampler, input.tex);
     textureColor.a *= transparency;
     return textureColor;
-
-    //float4 textureColour;
-    //float4 lightColour;
-
-    //// Sample the texture. Calculate light intensity and colour, return light*texture for final pixel colour.
-    //textureColour = mtexture.Sample(msampler, input.tex);
-    //lightColour = calculateLighting(-direction, input.normal, diffuseLight);
-
-
-    ////lightColour = calcSpotlight(direction, input.normal, diffuse, input.worldPosition, lightPosition);
-
-    //return lightColour;
-
-
-
-
-
-
-
 
 }

@@ -7,12 +7,12 @@ public:
 	~ColourQuantization();
 
 	void setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX& worldMatrix, const XMMATRIX& viewMatrix, const XMMATRIX& projectionMatrix,
-		ID3D11ShaderResourceView* inputTexture, float transitionSmoothing, float quantLevel);
+		ID3D11ShaderResourceView* inputTexture, float transitionSmoothing, int quantLevel);
 
 	struct CQFilterType
 	{
 		float transitionSmoothing;
-		float quantLevel;
+		int quantLevel;
 		XMFLOAT2 padding;
 	};
 private:

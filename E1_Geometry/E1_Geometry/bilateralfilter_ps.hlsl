@@ -24,10 +24,10 @@ float4 main(InputType input) : SV_TARGET {
     // Sample the flow map for tangent direction
     float2 tangentFlow = flowMap.Sample(sampleType, texCoords).xy;
 
-    // Adjust direction based on pass (horizontal or vertical)
+
     float2 direction = (passing == 0)
-        ? float2(tangentFlow.y, -tangentFlow.x)  // Rotate tangent 90° for horizontal pass
-        : tangentFlow;                           // Use tangent as-is for vertical pass
+        ? float2(tangentFlow.y, -tangentFlow.x)  // Gradient direction (perpendicular to flow)
+        : tangentFlow;                           // Tangent direction (aligned with flow)
 
     // Normalize sampling step size
     float2 absoluteDirection = abs(direction);

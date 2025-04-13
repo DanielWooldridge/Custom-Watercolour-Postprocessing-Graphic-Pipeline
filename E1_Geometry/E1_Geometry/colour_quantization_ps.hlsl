@@ -6,6 +6,12 @@ struct InputType {
     float2 tex : TEXCOORD0;
 };
 
+cbuffer ColourFilter : register(b1)
+{
+    float transitionSmoothing;
+	int quantLevel;
+}
+
 // HARD-CODED PARAMS
 static const int NUM_BINS = 8;           // Number of quantization levels
 static const float PHI_Q = 3.4f;         // Smooth transition factor

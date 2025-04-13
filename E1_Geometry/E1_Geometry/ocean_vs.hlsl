@@ -18,12 +18,7 @@ cbuffer WaveParamsBuffer : register(b1)
     float padding;
 };
 
-cbuffer DirectionalLightBuffer : register(b2)
-{
-    float4 diffuse;        // Diffuse light color
-	float3 direction;      // Direction of the light
-	float pad;
-};
+
 
 // Input Structure
 struct InputType

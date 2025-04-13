@@ -24,18 +24,13 @@ public:
 	};
 
 
-	struct LightType
-	{
-		XMFLOAT4 diffuse;        // Diffuse light color
-		XMFLOAT3 direction;      // Direction of the light
-		float pad;
-	};
+
 
 	OceanShader(ID3D11Device* device, HWND hwnd);
 	~OceanShader();
 
 	void setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX& world, const XMMATRIX& view, const XMMATRIX& projection, ID3D11ShaderResourceView* texture, float time,
-		float amplitude, float frequency, float speed, float numWaves, float phases, float transparency, Light* dirLight);
+		float amplitude, float frequency, float speed, float numWaves, float phases, float transparency);
 private:
 	void initShader(const wchar_t* vsFilename, const wchar_t* psFilename);
 

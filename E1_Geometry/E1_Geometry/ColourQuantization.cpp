@@ -71,7 +71,7 @@ void ColourQuantization::initShader(const wchar_t* vsFilename, const wchar_t* ps
 }
 
 void ColourQuantization::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX& worldMatrix, const XMMATRIX& viewMatrix, 
-	const XMMATRIX& projectionMatrix, ID3D11ShaderResourceView* inputTexture, float transitionSmoothing, float quantLevel)
+	const XMMATRIX& projectionMatrix, ID3D11ShaderResourceView* inputTexture, float transitionSmoothing, int quantLevel)
 {
 	HRESULT result;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;

@@ -77,20 +77,20 @@ void OceanShader::initShader(const wchar_t* vsFilename, const wchar_t* psFilenam
 	renderer->CreateBuffer(&waveBufferDesc, NULL, &waveBuffer);
 
 
-	// Setup directional light buffer
-	directionalBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	directionalBufferDesc.ByteWidth = sizeof(LightType);
-	directionalBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	directionalBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	directionalBufferDesc.MiscFlags = 0;
-	directionalBufferDesc.StructureByteStride = 0;
-	renderer->CreateBuffer(&directionalBufferDesc, NULL, &directionalLightBuffer);
+	//// Setup directional light buffer
+	//directionalBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	//directionalBufferDesc.ByteWidth = sizeof(LightType);
+	//directionalBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	//directionalBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	//directionalBufferDesc.MiscFlags = 0;
+	//directionalBufferDesc.StructureByteStride = 0;
+	//renderer->CreateBuffer(&directionalBufferDesc, NULL, &directionalLightBuffer);
 
 }
 
 
 void OceanShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX& world, const XMMATRIX& view, const XMMATRIX& projection, ID3D11ShaderResourceView* texture, 
-	float totalTime, float amplitude, float frequency, float speed, float numWaves, float phases, float transparency, Light* dirLight)
+	float totalTime, float amplitude, float frequency, float speed, float numWaves, float phases, float transparency)
 {
 	// Map the buffer to set wave parameters and time
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -122,15 +122,6 @@ void OceanShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const 
 
 
 
-
-	// Directional Light Variable declarations to send to pixel shader
-	LightType* dirlightPtr;
-	deviceContext->Map(directionalLightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	dirlightPtr = (LightType*)mappedResource.pData;
-	dirlightPtr->diffuse = dirLight->getDiffuseColour();
-	dirlightPtr->direction = dirLight->getDirection();
-	deviceContext->Unmap(directionalLightBuffer, 0);
-	deviceContext->PSSetConstantBuffers(2, 1, &directionalLightBuffer);
 
 
 

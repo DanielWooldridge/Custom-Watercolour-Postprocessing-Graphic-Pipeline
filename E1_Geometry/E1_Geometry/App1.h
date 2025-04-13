@@ -7,7 +7,6 @@
 #include "../DXFramework/DXF.h"
 #include "TextureShader.h"
 #include "ColourTriangle.h"
-#include "GreyScale.h"
 #include "CompSlider.h"
 #include "MovementShader.h"
 #include "StructureTensor.h"
@@ -43,14 +42,12 @@ protected:
 	void DepthPass();
 	void FirstPass();
 	void RGBToYCBCRPass();
-	void GreyScalePass();
 	void StructureTensorPass();
 	void HorizontalSmoothingPass();
 	void VerticalSmoothingPass();
 	void BilateralFilterPass(RenderTexture* input, RenderTexture* output, bool isHorizontal);
 	void DoGFilterPass();
 	void FlowCurvePass();
-	void DoGFlowPass();
 	void ColourQuantizationPass();
 	void CartoonRenderingPass();
 	void PaperRenderingPass();
@@ -69,13 +66,13 @@ protected:
 	void InitialiseMeshs(int screenWidth, int screenHeight);
 	void InitialiseVariables(int screenWidth, int screenHeight);
 	void InitialiseRenderTextures(int screenWidth, int screenHeight);
-	void InitaliseLights();
+	ID3D11ShaderResourceView* GetSelectedOutputTexture();
+
 
 private:
 
 	//Shader Declaration
 	TextureShader* textureShader;
-	GreyScale* greyscaleShader;
 	CompSlider* comparisonShader;
 	MovementShader* movementShader;
 	Watercolour* structureTensorShader;
@@ -86,7 +83,6 @@ private:
 	BilateralFilter* bilateralFilterShader;
 	DifferenceOfGuassian* dogFilterShader;
 	FlowCurve* flowCurveShader;
-	DoG_via_FlowCurve* dogFlowShader;
 	ColourQuantization* cqShader;
 	CartoonRendering* cartoonShader;
 	PaperShader* paperShader;
@@ -108,7 +104,6 @@ private:
 	//Render To Texture
 	RenderTexture* depthTexture;
 	RenderTexture* renderTexture;
-	RenderTexture* greyscaleTexture;
 	RenderTexture* comparisonTexture;
 	RenderTexture* structureTensorTexture;
 	RenderTexture* horizontalBlurTexture;
@@ -117,7 +112,6 @@ private:
 	RenderTexture* finalBilateralTexture;
 	RenderTexture* dogFilterTexture;
 	RenderTexture* flowCurveTexture;
-	RenderTexture* dogFlowTexture;
 	RenderTexture* colourQuantizationTexture;
 	RenderTexture* cartoonRenderTexture;
 	RenderTexture* paperRenderTexture;
@@ -125,15 +119,9 @@ private:
 	RenderTexture* previousFrameTexture;
 	RenderTexture* ycbcrTexture;
 	RenderTexture* rgbTexture;
-
-
-
-	//Lighting
-	Light* directionalLight;
 	
 
 	//GUI Variable Declaration
-	bool greyscaleToggle;
 	float comparisonSliderPosition;
 	int selectedTexture = 0; 
 
@@ -168,7 +156,7 @@ private:
 
 	// Colour quantization controls
 	float transitionSmoothing;
-	float quantLevel;
+	int quantLevel;
 
 	// Paper Shader Controls
 	float paperStrength;
@@ -184,9 +172,9 @@ private:
 	DirectX::XMFLOAT3 lastFreeCameraPosition; // Store previous free camera position
 
 	float movementIndicator;
-	const float MOVEMENT_NONE = 0;   // No movement 
-	const float MOVEMENT_WAVE = 1;   // Ocean waves
-	const float MOVEMENT_SINE = 2;   // Floating movement 
+	float no_movement;
+	float wave_movement;
+	float sine_movement;
 
 
 	int frameCount = 0;

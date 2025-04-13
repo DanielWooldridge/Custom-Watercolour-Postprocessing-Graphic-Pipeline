@@ -2,7 +2,7 @@ Texture2D img : register(t0);
 Texture2D flowmap : register(t1);   
 SamplerState sampleType : register(s0);
 
-cbuffer dogBuffer
+cbuffer dogBuffer : register(b1)
 {
     float sensitivity;
     float smoothing;
@@ -25,7 +25,7 @@ float4 main(InputType input) : SV_TARGET
     float twoSigmaRSquared = 2.0 * smoothing * smoothing;
 
     float2 t = normalize(flowmap.Sample(sampleType, uv).xy);
-    if (any(isnan(t))) return float4(1, 0, 0, 1); // Debug red
+    if (any(isnan(t))) return float4(1, 0, 0, 1); 
 
     float2 n = normalize(float2(t.y, -t.x));
     float2 nabs = abs(n);
