@@ -138,10 +138,11 @@ bool App1::Render()
 	CartoonRenderingPass();
 
 	// Step 8: Paper texture overlay
-	PaperRenderingPass();
+
 
 	// Final conversions and presentation
 	YCBCRToRGBPass();
+	PaperRenderingPass();
 	TemporalPass();
 	ComparisonPass();
 	FinalPass();
@@ -504,23 +505,6 @@ void App1::CartoonRenderingPass()
 	renderer->setZBuffer(true);
 }
 
-void App1::PaperRenderingPass()
-{
-	paperRenderTexture->setRenderTarget(renderer->getDeviceContext());
-	paperRenderTexture->clearRenderTarget(renderer->getDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
-
-	XMMATRIX worldMatrix = renderer->getWorldMatrix();
-	XMMATRIX orthoMatrix = paperRenderTexture->getOrthoMatrix();
-	XMMATRIX orthoViewMatrix = camera->getOrthoViewMatrix();
-
-	renderer->setZBuffer(false);
-
-	orthoMesh->sendData(renderer->getDeviceContext());
-	paperShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, paperTexture, colourQuantizationTexture->getShaderResourceView(), depthTexture->getShaderResourceView(), paperStrength, depthFactor);
-	paperShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
-
-	renderer->setZBuffer(true);
-}
 
 
 void App1::TemporalPass() 
@@ -567,6 +551,24 @@ void App1::YCBCRToRGBPass()
 	renderer->setBackBufferRenderTarget();
 }
 
+void App1::PaperRenderingPass()
+{
+	paperRenderTexture->setRenderTarget(renderer->getDeviceContext());
+	paperRenderTexture->clearRenderTarget(renderer->getDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
+
+	XMMATRIX worldMatrix = renderer->getWorldMatrix();
+	XMMATRIX orthoMatrix = paperRenderTexture->getOrthoMatrix();
+	XMMATRIX orthoViewMatrix = camera->getOrthoViewMatrix();
+
+	renderer->setZBuffer(false);
+
+	orthoMesh->sendData(renderer->getDeviceContext());
+	paperShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, paperTexture, rgbTexture->getShaderResourceView(), depthTexture->getShaderResourceView(), paperStrength, depthFactor);
+	paperShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
+
+	renderer->setZBuffer(true);
+}
+
 void App1::ComparisonPass()
 {
 	// Set the comparison texture as the render target
@@ -588,8 +590,17 @@ void App1::ComparisonPass()
 	ID3D11ShaderResourceView* selectedResourceView = GetSelectedOutputTexture();
 
 
+	ID3D11ShaderResourceView* conversionView = selectedResourceView;
+
+	if (visualizeInRGB) {
+	
+		ConvertColourSpace(selectedResourceView, conversionTexture);
+		conversionView = conversionTexture->getShaderResourceView();
+	}
+
+
 	// Set shader parameters for the comparison shader
-	comparisonShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, renderTexture->getShaderResourceView(), selectedResourceView, comparisonSliderPosition);
+	comparisonShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, renderTexture->getShaderResourceView(), conversionView, comparisonSliderPosition);
 
 	// Render the comparison using the CompSlider shader
 	comparisonShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
@@ -740,6 +751,8 @@ void App1::InitialiseVariables(int screenWidth, int screenHeight)
 	bf_edge = 1.f;
 	bf_abstraction = 3.f;
 
+	visualizeInRGB = false;
+
 }
 
 void App1::InitialiseRenderTextures(int screenWidth, int screenHeight)
@@ -761,6 +774,7 @@ void App1::InitialiseRenderTextures(int screenWidth, int screenHeight)
 	previousFrameTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 	ycbcrTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 	rgbTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
+	conversionTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 	
 }
 
@@ -820,6 +834,27 @@ ID3D11ShaderResourceView* App1::GetSelectedOutputTexture()
 		return renderTexture->getShaderResourceView();
 		break;
 	}
+
+
+
+}
+
+void App1::ConvertColourSpace(ID3D11ShaderResourceView* source, RenderTexture* destination)
+{
+	destination->setRenderTarget(renderer->getDeviceContext());
+	destination->clearRenderTarget(renderer->getDeviceContext(), 0, 0, 0, 1);
+
+	XMMATRIX world = renderer->getWorldMatrix();
+	XMMATRIX view = camera->getOrthoViewMatrix();
+	XMMATRIX ortho = destination->getOrthoMatrix();
+
+	renderer->setZBuffer(false);
+	orthoMesh->sendData(renderer->getDeviceContext());
+
+	ycbcrToRgbShader->setShaderParameters(renderer->getDeviceContext(), world, view, ortho, source);
+	ycbcrToRgbShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
+
+	renderer->setZBuffer(true);
 }
 
 
@@ -938,6 +973,10 @@ void App1::GUI()
 			ImGui::SliderFloat("Bilateral - Abstraction", &bf_abstraction, 1.0f, 5.0f);
 			ImGui::TreePop();
 		}
+		if (ImGui::CollapsingHeader("Colour Space")) {
+			ImGui::Checkbox("Visualize Intermediate in RGB", &visualizeInRGB);
+		}
+
 	}
 
 	ImGui::Separator();

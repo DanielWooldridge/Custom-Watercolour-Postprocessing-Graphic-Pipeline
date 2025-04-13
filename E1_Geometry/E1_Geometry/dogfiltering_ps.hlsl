@@ -2,7 +2,7 @@ Texture2D img : register(t0);
 Texture2D flowmap : register(t1);   
 SamplerState sampleType : register(s0);
 
-cbuffer dogBuffer : register(b1)
+cbuffer dogBuffer : register(b0)
 {
     float sensitivity;
     float smoothing;

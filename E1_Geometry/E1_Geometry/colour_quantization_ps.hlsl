@@ -6,7 +6,7 @@ struct InputType {
     float2 tex : TEXCOORD0;
 };
 
-cbuffer ColourFilter : register(b1)
+cbuffer ColourFilter : register(b0)
 {
     float transitionSmoothing;
 	int quantLevel;
@@ -24,11 +24,11 @@ float4 main(InputType input) : SV_TARGET {
     float y = ycbcr.x;
 
     // Hard quantization step
-    float qY = floor(y * NUM_BINS + 0.5) / NUM_BINS;
+    float qY = floor(y * quantLevel + 0.5) / quantLevel;
 
     // Smoothstep softens banding
-    float smoothY = smoothstep(-2.0, 2.0, PHI_Q * (y - qY) * 100.0) - 0.5;
-    float quantY = qY + smoothY / NUM_BINS;
+    float smoothY = smoothstep(-2.0, 2.0, transitionSmoothing * (y - qY) * 100.0) - 0.5;
+    float quantY = qY + smoothY / quantLevel;
 
     // Combine quantized Y with original CbCr
     float3 quantYCbCr = float3(quantY, ycbcr.yz);

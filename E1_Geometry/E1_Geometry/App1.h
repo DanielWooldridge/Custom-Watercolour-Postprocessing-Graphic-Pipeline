@@ -66,6 +66,7 @@ protected:
 	void InitialiseVariables(int screenWidth, int screenHeight);
 	void InitialiseRenderTextures(int screenWidth, int screenHeight);
 	ID3D11ShaderResourceView* GetSelectedOutputTexture();
+	void ConvertColourSpace(ID3D11ShaderResourceView* source, RenderTexture* destination);
 
 
 private:
@@ -118,6 +119,7 @@ private:
 	RenderTexture* previousFrameTexture;
 	RenderTexture* ycbcrTexture;
 	RenderTexture* rgbTexture;
+	RenderTexture* conversionTexture;
 	
 
 	//GUI Variable Declaration
@@ -189,6 +191,7 @@ private:
 	float bf_abstraction;
 
 	ID3D11ShaderResourceView* paperTexture;
+	bool visualizeInRGB;
 
 };
 

@@ -100,7 +100,7 @@ void DifferenceOfGuassian::setShaderParameters(ID3D11DeviceContext* deviceContex
 	dogPtr->tau = tau;
 	dogPtr->texelSize = texelSize;
 	deviceContext->Unmap(DoGBuffer, 0);
-	deviceContext->PSSetConstantBuffers(1, 1, &DoGBuffer); // Updated to bind to the pixel shader
+	deviceContext->PSSetConstantBuffers(0, 1, &DoGBuffer); // Updated to bind to the pixel shader
 
 	// Set shader textures and samplers
 	deviceContext->PSSetShaderResources(0, 1, &inputTexture); // Texture slot t0
