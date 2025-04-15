@@ -7,12 +7,13 @@ public:
 	~CompSlider();
 
 	void setShaderParameters(ID3D11DeviceContext* deviceContex, const XMMATRIX& worldMatrix, const XMMATRIX& viewMatrix, const XMMATRIX& projectionMatrix, 
-		ID3D11ShaderResourceView* a_texture, ID3D11ShaderResourceView* b_texture, float sliderPosition);
+		ID3D11ShaderResourceView* a_texture, ID3D11ShaderResourceView* b_texture, float sliderPosition, int visualize);
 
 	struct SliderBufferType
 	{
 		float sliderPosition;
-		XMFLOAT3 padding; // has to equal 16-byte
+		int visualizeInRGB;
+		XMFLOAT2 padding; // has to equal 16-byte
 	};
 
 private:

@@ -85,7 +85,7 @@ void CompSlider::initShader(const wchar_t* vsFilename, const wchar_t* psFilename
 }
 
 void CompSlider::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX& worldMatrix, const XMMATRIX& viewMatrix, const XMMATRIX& projectionMatrix, 
-	ID3D11ShaderResourceView* a_texture, ID3D11ShaderResourceView* b_texture, float sliderPosition)
+	ID3D11ShaderResourceView* a_texture, ID3D11ShaderResourceView* b_texture, float sliderPosition, int visualize)
 {
 	HRESULT result;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -111,6 +111,7 @@ void CompSlider::setShaderParameters(ID3D11DeviceContext* deviceContext, const X
 	deviceContext->Map(sliderBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	sliderPtr = (SliderBufferType*)mappedResource.pData;
 	sliderPtr->sliderPosition = sliderPosition; // Position from 0.0 to 1.0
+	sliderPtr->visualizeInRGB = visualize ? 1 : 0;
 	deviceContext->Unmap(sliderBuffer, 0);
 	deviceContext->PSSetConstantBuffers(1, 1, &sliderBuffer);
 

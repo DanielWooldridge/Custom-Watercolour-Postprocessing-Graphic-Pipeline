@@ -30,7 +30,7 @@ float4 main(InputType input) : SV_TARGET
     float2 n = normalize(float2(t.y, -t.x));
     float2 nabs = abs(n);
     float ds = 1.0 / max(nabs.x, nabs.y);
-    n = n * ds / texelSize;
+    n *= ds / texelSize;
 
     float centerY = img.Sample(sampleType, uv).r;
     float2 sum = float2(centerY, centerY);
@@ -59,19 +59,21 @@ float4 main(InputType input) : SV_TARGET
 
     sum /= norm;
 
-    // DoG diff calculation
-    float diff = 10.0 * (sum.x - tau * sum.y) * smoothing;
-    diff = saturate(1.0 - diff);  // Invert for dark lines
+    // Final DoG value (closer to GLSL style)
+    float diff = (sum.x - tau * sum.y);
 
-    // Posterization
-    float levels = 5.0; 
+    // Add contrast boost
+    diff *= 10.0;
+
+    // Invert for dark lines
+    diff = 1.0 - diff;
+
+    // Clamp before posterizing
+    diff = saturate(diff);
+
+    // Posterize
+    float levels = 5.0;
     diff = floor(diff * (levels - 1.0) + 0.5) / (levels - 1.0);
 
-    // Preserve CbCr, modulate only Y
-    float3 ycbcr = img.Sample(sampleType, uv).rgb;
-    float Y = diff;
-    float Cb = ycbcr.g;
-    float Cr = ycbcr.b;
-
-    return float4(Y, Cb, Cr, 1.0); // Full YCbCr output
+    return float4(diff.xxx, 1.0); // Output greyscale
 }

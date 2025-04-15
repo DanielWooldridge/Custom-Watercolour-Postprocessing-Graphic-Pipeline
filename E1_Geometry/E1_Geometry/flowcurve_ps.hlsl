@@ -18,7 +18,6 @@ struct InputType
     float3 normal : NORMAL;
 };
 
-
 void Step(inout float2 cpos, inout float2 pTan, inout float tLength, inout float cLength, float2 texelSize)
 {
     float2 tangent = flowmap.Sample(sampleType, cpos).xy;
@@ -38,7 +37,6 @@ void Step(inout float2 cpos, inout float2 pTan, inout float tLength, inout float
     tLength += cLength;
 }
 
-
 float4 main(InputType input) : SV_TARGET {
     float2 uv = input.tex;
 
@@ -56,7 +54,6 @@ float4 main(InputType input) : SV_TARGET {
     float H = dogImg.Sample(sampleType, uv).x;
     float w = 1.0;
 
-    // Struct values manually handled
     float2 posA = uv;
     float2 posB = uv;
     float2 tanA = flowmap.Sample(sampleType, uv).xy / texelSize;
@@ -65,15 +62,11 @@ float4 main(InputType input) : SV_TARGET {
     float lenB = 0.0;
     float stepLen;
 
-    
-
-
     // Forward direction
     [loop]
     while (lenA < halfWidth) {
         Step(posA, tanA, lenA, stepLen, texelSize);
         posA = clamp(posA, 0.0, 1.0);
-        posB = clamp(posB, 0.0, 1.0);
         float k = stepLen * exp(-lenA * lenA / twoSigmaMSquared);
         H += k * dogImg.Sample(sampleType, posA).x;
         w += k;
@@ -83,28 +76,26 @@ float4 main(InputType input) : SV_TARGET {
     [loop]
     while (lenB < halfWidth) {
         Step(posB, tanB, lenB, stepLen, texelSize);
-        posA = clamp(posA, 0.0, 1.0);
         posB = clamp(posB, 0.0, 1.0);
         float k = stepLen * exp(-lenB * lenB / twoSigmaMSquared);
         H += k * dogImg.Sample(sampleType, posB).x;
         w += k;
     }
-
     H /= w;
 
-    // GLSL-style contrast thresholding
-    // Thresholding like in the GLSL version
-    //float edge = (H > 0.0) ? 1.0 : 2.0 * smoothstep(-2.0, 2.0, 1.5 * H);
+    // For debug: try visualizing the raw H first
+    return float4(H.xxx, 1.0); 
 
-    //float edge = smoothstep(0.2, 0.6, H); // Adjust 0.2 and 0.6 as needed
-    //return float4(edge.xxx, 1.0);
+    // Try scaling H before thresholding to give it range
+    float scaledH = phi * H;
+
+    // Use GLSL-style thresholding
+    float edge = (scaledH > 0.0) ? 1.0 : 2.0 * smoothstep(-2.0, 2.0, scaledH);
+
+    // Optional: invert if you want black lines
+    edge = saturate(1.0 - edge);
+
+    return float4(edge.xxx, 1.0);
 
 
-    float3 ycbcr = dogImg.Sample(sampleType, uv).rgb;
-    ycbcr.r = H; // your flow-integrated DoG luminance result
-    return float4(ycbcr, 1.0);
-
-
-   
 }
- 

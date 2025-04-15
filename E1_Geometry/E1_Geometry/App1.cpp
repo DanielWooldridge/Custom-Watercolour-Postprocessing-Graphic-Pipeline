@@ -103,10 +103,12 @@ bool App1::Render()
 {
 	DepthPass();                 
 
-	FirstPass();                 
-	RGBToYCBCRPass();                      
+	FirstPass();    
 
-	// Step 1: Structure Tensor
+	
+	RGBToYCBCRPass();
+	
+	// Step 1: Structure Tensor and Flow Map generation
 	StructureTensorPass();
 	HorizontalSmoothingPass();    
 	VerticalSmoothingPass();      
@@ -136,9 +138,6 @@ bool App1::Render()
 
 	// Step 7: Blending
 	CartoonRenderingPass();
-
-	// Step 8: Paper texture overlay
-
 
 	// Final conversions and presentation
 	YCBCRToRGBPass();
@@ -287,13 +286,13 @@ void App1::FirstPass()
 
 
 	// Ship model
-	XMMATRIX shipTranslationMatrix = XMMatrixTranslation(40.0f, 7.0f, 40.0f);
-	XMMATRIX shipScalingMatrix = XMMatrixScaling(2.0f, 2.0f, 2.0f);
-	XMMATRIX shipRotationMatrix = XMMatrixRotationX(160);
-	XMMATRIX shipTransformedWorldMatrix = shipRotationMatrix * shipScalingMatrix * shipTranslationMatrix * worldMatrix;
-	ship->sendData(renderer->getDeviceContext());
-	textureShader->setShaderParameters(renderer->getDeviceContext(), shipTransformedWorldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"shipWood"));
-	textureShader->render(renderer->getDeviceContext(), ship->getIndexCount());
+	//XMMATRIX shipTranslationMatrix = XMMatrixTranslation(40.0f, 7.0f, 40.0f);
+	//XMMATRIX shipScalingMatrix = XMMatrixScaling(2.0f, 2.0f, 2.0f);
+	//XMMATRIX shipRotationMatrix = XMMatrixRotationX(160);
+	//XMMATRIX shipTransformedWorldMatrix = shipRotationMatrix * shipScalingMatrix * shipTranslationMatrix * worldMatrix;
+	//ship->sendData(renderer->getDeviceContext());
+	//textureShader->setShaderParameters(renderer->getDeviceContext(), shipTransformedWorldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"shipWood"));
+	//textureShader->render(renderer->getDeviceContext(), ship->getIndexCount());
 
 	// Render Ocean
 	renderer->setAlphaBlending(true);
@@ -589,18 +588,9 @@ void App1::ComparisonPass()
 	// Determine which texture to pass based on user selection
 	ID3D11ShaderResourceView* selectedResourceView = GetSelectedOutputTexture();
 
-
-	ID3D11ShaderResourceView* conversionView = selectedResourceView;
-
-	if (visualizeInRGB) {
-	
-		ConvertColourSpace(selectedResourceView, conversionTexture);
-		conversionView = conversionTexture->getShaderResourceView();
-	}
-
-
 	// Set shader parameters for the comparison shader
-	comparisonShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, renderTexture->getShaderResourceView(), conversionView, comparisonSliderPosition);
+	comparisonShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, renderTexture->getShaderResourceView(), selectedResourceView, comparisonSliderPosition, visualizeInRGB);
+	
 
 	// Render the comparison using the CompSlider shader
 	comparisonShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
@@ -719,8 +709,8 @@ void App1::InitialiseVariables(int screenWidth, int screenHeight)
 	spatial = 1.0f; 
 
 	// DoG Controls
-	sensitivity = 5.6f;
-	smoothing = 0.6f;
+	sensitivity = 10.0f;
+	smoothing = 0.72f;
 	tau = 1;
 	texelSize = XMFLOAT2(1.0f / screenWidth, 1.0f / screenHeight);
 
@@ -839,30 +829,30 @@ ID3D11ShaderResourceView* App1::GetSelectedOutputTexture()
 
 }
 
-void App1::ConvertColourSpace(ID3D11ShaderResourceView* source, RenderTexture* destination)
-{
-	destination->setRenderTarget(renderer->getDeviceContext());
-	destination->clearRenderTarget(renderer->getDeviceContext(), 0, 0, 0, 1);
-
-	XMMATRIX world = renderer->getWorldMatrix();
-	XMMATRIX view = camera->getOrthoViewMatrix();
-	XMMATRIX ortho = destination->getOrthoMatrix();
-
-	renderer->setZBuffer(false);
-	orthoMesh->sendData(renderer->getDeviceContext());
-
-	ycbcrToRgbShader->setShaderParameters(renderer->getDeviceContext(), world, view, ortho, source);
-	ycbcrToRgbShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
-
-	renderer->setZBuffer(true);
-}
+//void App1::ConvertColourSpace(ID3D11ShaderResourceView* source, RenderTexture* destination)
+//{
+//	destination->setRenderTarget(renderer->getDeviceContext());
+//	destination->clearRenderTarget(renderer->getDeviceContext(), 0, 0, 0, 1);
+//
+//	XMMATRIX world = renderer->getWorldMatrix();
+//	XMMATRIX view = camera->getOrthoViewMatrix();
+//	XMMATRIX ortho = destination->getOrthoMatrix();
+//
+//	renderer->setZBuffer(false);
+//	orthoMesh->sendData(renderer->getDeviceContext());
+//
+//	ycbcrToRgbShader->setShaderParameters(renderer->getDeviceContext(), world, view, ortho, source);
+//	ycbcrToRgbShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
+//
+//	renderer->setZBuffer(true);
+//}
 
 
 void App1::LoadIntextures()
 {
 	textureMgr->loadTexture(L"grass", L"res/grass.jpg"); // Grass Texture
 	textureMgr->loadTexture(L"wood", L"res/sand.jpg"); // Wood Texture
-	textureMgr->loadTexture(L"water", L"res/water2.jpg"); // water Texture
+	textureMgr->loadTexture(L"water", L"res/try.png"); // water Texture
 	textureMgr->loadTexture(L"shipWood", L"res/shipWood.jpg"); // water Texture
 	textureMgr->loadTexture(L"canvas", L"res/canvas.jpg");
 
@@ -938,9 +928,9 @@ void App1::GUI()
 
 		if (ImGui::TreeNode("DoG Filter"))
 		{
-			ImGui::SliderFloat("Edge Sensitivity", &sensitivity, 1.0f, 20.0f);
-			ImGui::SliderFloat("Smoothing", &smoothing, 0.01f, 5.0f);
-			ImGui::SliderFloat("Edge Threshold (Tau)", &tau, 0.0f, 2.0f);
+			ImGui::SliderFloat("Edge Sensitivity", &sensitivity, 1.0f, 2.0f);
+			ImGui::SliderFloat("Smoothing", &smoothing, 0.72f, 5.0f);
+			ImGui::SliderFloat("Edge Threshold (Tau)", &tau, 0.7f, 1.0f);
 			ImGui::TreePop();
 		}
 

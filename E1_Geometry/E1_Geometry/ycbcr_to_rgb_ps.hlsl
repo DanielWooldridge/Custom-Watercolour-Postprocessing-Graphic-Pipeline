@@ -12,7 +12,7 @@ struct InputType
 float3 YCbCrtoRGB(float3 ycc)
 {
     float3 c = ycc - float3(0.0, 128.0 / 255.0, 128.0 / 255.0);
-   float R = c.x + 1.402 * c.z;
+    float R = c.x + 1.402 * c.z;
     float G = c.x - 0.344136 * c.y - 0.714136 * c.z;
     float B = c.x + 1.772 * c.y;
 
