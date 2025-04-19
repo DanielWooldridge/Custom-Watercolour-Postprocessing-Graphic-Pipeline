@@ -21,16 +21,20 @@ float4 main(InputType input) : SV_TARGET
 {
     float2 uv = clamp(input.tex, 0.0, 1.0);
 
+
     float twoSigmaESquared = 2.0 * sensitivity * sensitivity;
     float twoSigmaRSquared = 2.0 * smoothing * smoothing;
 
-    float2 t = normalize(flowmap.Sample(sampleType, uv).xy);
-    if (any(isnan(t))) return float4(1, 0, 0, 1); 
-
-    float2 n = normalize(float2(t.y, -t.x));
+    float2 t = flowmap.Sample(sampleType, uv).xy;
+    float2 n = float2(t.y, -t.x);
     float2 nabs = abs(n);
     float ds = 1.0 / max(nabs.x, nabs.y);
-    n *= ds / texelSize;
+
+  // Convert n to texture space
+    uint width, height;
+    img.GetDimensions(width, height);
+    float2 img_size = float2(width, height);
+    n /= img_size;
 
     float centerY = img.Sample(sampleType, uv).r;
     float2 sum = float2(centerY, centerY);
@@ -63,17 +67,17 @@ float4 main(InputType input) : SV_TARGET
     float diff = (sum.x - tau * sum.y);
 
     // Add contrast boost
-    diff *= 10.0;
+    diff *= 100.0;
 
     // Invert for dark lines
-    diff = 1.0 - diff;
+    //diff = 1.0 - diff;
 
     // Clamp before posterizing
-    diff = saturate(diff);
+    //diff = saturate(diff);
 
-    // Posterize
-    float levels = 5.0;
-    diff = floor(diff * (levels - 1.0) + 0.5) / (levels - 1.0);
+    //// Posterize
+    //float levels = 5.0;
+    //diff = floor(diff * (levels - 1.0) + 0.5) / (levels - 1.0);
 
     return float4(diff.xxx, 1.0); // Output greyscale
 }

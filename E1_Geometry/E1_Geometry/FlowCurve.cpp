@@ -71,7 +71,7 @@ void FlowCurve::initShader(const wchar_t* vsFilename, const wchar_t* psFilename)
 
 
 void FlowCurve::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX& worldMatrix, const XMMATRIX& viewMatrix, const XMMATRIX& projectionMatrix, 
-	ID3D11ShaderResourceView* inputTexture, ID3D11ShaderResourceView* dogTexture, XMFLOAT2 currentPosition, XMFLOAT2 previousTan, float totLength, float curLength)
+	ID3D11ShaderResourceView* inputTexture, ID3D11ShaderResourceView* dogTexture, float phi, float sigma_m, bool inverted, bool polsterize)
 {
 	HRESULT result;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -94,10 +94,11 @@ void FlowCurve::setShaderParameters(ID3D11DeviceContext* deviceContext, const XM
 	FlowCurveFilterType* flowptr;
 	deviceContext->Map(fCurveBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	flowptr = (FlowCurveFilterType*)mappedResource.pData;
-	flowptr->cPos = currentPosition;
-	flowptr->pTan = previousTan;
-	flowptr->tLength = totLength;
-	flowptr->cLength = curLength;
+	flowptr->phi = phi;
+	flowptr->sigma_m = sigma_m;
+	flowptr->invertedLines = inverted;
+	flowptr->polsterize = polsterize;
+
 	deviceContext->Unmap(fCurveBuffer, 0);
 	deviceContext->PSSetConstantBuffers(0, 1, &fCurveBuffer);
 	deviceContext->PSSetSamplers(0, 1, &sampleState);

@@ -175,23 +175,23 @@ void App1::DepthPass()
 	XMMATRIX viewMatrix = camera->getViewMatrix();
 	XMMATRIX projectionMatrix = renderer->getProjectionMatrix();
 
-	// Render Sphere
-	movementIndicator = sine_movement;
-	XMMATRIX sphereTranslationMatrix = XMMatrixTranslation(60.0f, 10.0f, 50.0f);
-	XMMATRIX sphereScalingMatrix = XMMatrixScaling(2.0f, 2.0f, 2.0f);
-	XMMATRIX sphereTransformedWorldMatrix = sphereScalingMatrix * sphereTranslationMatrix * worldMatrix;
-	sphere->sendData(renderer->getDeviceContext());
-	depthShader->setShaderParameters(renderer->getDeviceContext(), sphereTransformedWorldMatrix, viewMatrix, projectionMatrix, totalTime, amplitude, frequency, speed, numWaves, phases, transparency, sine_movement);
-	depthShader->render(renderer->getDeviceContext(), sphere->getIndexCount());
+	//// Render Sphere
+	//movementIndicator = sine_movement;
+	//XMMATRIX sphereTranslationMatrix = XMMatrixTranslation(60.0f, 10.0f, 50.0f);
+	//XMMATRIX sphereScalingMatrix = XMMatrixScaling(2.0f, 2.0f, 2.0f);
+	//XMMATRIX sphereTransformedWorldMatrix = sphereScalingMatrix * sphereTranslationMatrix * worldMatrix;
+	//sphere->sendData(renderer->getDeviceContext());
+	//depthShader->setShaderParameters(renderer->getDeviceContext(), sphereTransformedWorldMatrix, viewMatrix, projectionMatrix, totalTime, amplitude, frequency, speed, numWaves, phases, transparency, sine_movement);
+	//depthShader->render(renderer->getDeviceContext(), sphere->getIndexCount());
 
-	// Render Cube
-	movementIndicator = sine_movement;
-	XMMATRIX cubeTranslationMatrix = XMMatrixTranslation(50.0f, 10.0f, 62.5f);
-	XMMATRIX cubeScalingMatrix = XMMatrixScaling(2.0f, 2.0f, 2.0f);
-	XMMATRIX cubeTransformedWorldMatrix = cubeScalingMatrix * cubeTranslationMatrix * worldMatrix;
-	cube->sendData(renderer->getDeviceContext());
-	depthShader->setShaderParameters(renderer->getDeviceContext(), cubeTransformedWorldMatrix, viewMatrix, projectionMatrix, totalTime, amplitude, frequency, speed, numWaves, phases, transparency, sine_movement);
-	depthShader->render(renderer->getDeviceContext(), cube->getIndexCount());
+	//// Render Cube
+	//movementIndicator = sine_movement;
+	//XMMATRIX cubeTranslationMatrix = XMMatrixTranslation(50.0f, 10.0f, 62.5f);
+	//XMMATRIX cubeScalingMatrix = XMMatrixScaling(2.0f, 2.0f, 2.0f);
+	//XMMATRIX cubeTransformedWorldMatrix = cubeScalingMatrix * cubeTranslationMatrix * worldMatrix;
+	//cube->sendData(renderer->getDeviceContext());
+	//depthShader->setShaderParameters(renderer->getDeviceContext(), cubeTransformedWorldMatrix, viewMatrix, projectionMatrix, totalTime, amplitude, frequency, speed, numWaves, phases, transparency, sine_movement);
+	//depthShader->render(renderer->getDeviceContext(), cube->getIndexCount());
 
 	// Render Ship Model
 	movementIndicator = no_movement;
@@ -269,20 +269,20 @@ void App1::FirstPass()
 	//textureShader->render(renderer->getDeviceContext(), floor->getIndexCount());
 
 	// Render Sphere
-	XMMATRIX sphereTranslationMatrix = XMMatrixTranslation(60.0f, 10.0f, 50.0f); 
-	XMMATRIX sphereScalingMatrix = XMMatrixScaling(2.0f, 2.0f, 2.0f); 
-	XMMATRIX sphereTransformedWorldMatrix = sphereScalingMatrix * sphereTranslationMatrix * worldMatrix;
-	sphere->sendData(renderer->getDeviceContext());
-	movementShader->setShaderParameters(renderer->getDeviceContext(), sphereTransformedWorldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"wood"), totalTime, 0.0);
-	movementShader->render(renderer->getDeviceContext(), floor->getIndexCount());
+	//XMMATRIX sphereTranslationMatrix = XMMatrixTranslation(60.0f, 10.0f, 50.0f); 
+	//XMMATRIX sphereScalingMatrix = XMMatrixScaling(2.0f, 2.0f, 2.0f); 
+	//XMMATRIX sphereTransformedWorldMatrix = sphereScalingMatrix * sphereTranslationMatrix * worldMatrix;
+	//sphere->sendData(renderer->getDeviceContext());
+	//movementShader->setShaderParameters(renderer->getDeviceContext(), sphereTransformedWorldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"wood"), totalTime, 0.0);
+	//movementShader->render(renderer->getDeviceContext(), floor->getIndexCount());
 
-	// Render Cube
-	XMMATRIX cubeTranslationMatrix = XMMatrixTranslation(50.0f, 10.0f, 62.5f);
-	XMMATRIX cubeScalingMatrix = XMMatrixScaling(2.0f, 2.0f, 2.0f);
-	XMMATRIX cubeTransformedWorldMatrix = cubeScalingMatrix * cubeTranslationMatrix * worldMatrix;
-	cube->sendData(renderer->getDeviceContext());
-	movementShader->setShaderParameters(renderer->getDeviceContext(), cubeTransformedWorldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"wood"), totalTime, 1.0);
-	movementShader->render(renderer->getDeviceContext(), floor->getIndexCount());
+	//// Render Cube
+	//XMMATRIX cubeTranslationMatrix = XMMatrixTranslation(50.0f, 10.0f, 62.5f);
+	//XMMATRIX cubeScalingMatrix = XMMatrixScaling(2.0f, 2.0f, 2.0f);
+	//XMMATRIX cubeTransformedWorldMatrix = cubeScalingMatrix * cubeTranslationMatrix * worldMatrix;
+	//cube->sendData(renderer->getDeviceContext());
+	//movementShader->setShaderParameters(renderer->getDeviceContext(), cubeTransformedWorldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"wood"), totalTime, 1.0);
+	//movementShader->render(renderer->getDeviceContext(), floor->getIndexCount());
 
 
 	// Ship model
@@ -347,7 +347,7 @@ void App1::StructureTensorPass()
 	orthoMesh->sendData(renderer->getDeviceContext());
 
 	// Set shader parameters for the horizontal blur shader
-	structureTensorShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, baseViewMatrix, orthoMatrix, ycbcrTexture->getShaderResourceView());
+	structureTensorShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, baseViewMatrix, orthoMatrix, renderTexture->getShaderResourceView());
 
 	// Render using the horizontal blur shader
 	structureTensorShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
@@ -459,7 +459,7 @@ void App1::FlowCurvePass()
 	renderer->setZBuffer(false);
 
 	orthoMesh->sendData(renderer->getDeviceContext());
-	flowCurveShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, verticalBlurTexture->getShaderResourceView(), dogFilterTexture->getShaderResourceView(), currentPosition, previousTan, totLength, curLength);
+	flowCurveShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, verticalBlurTexture->getShaderResourceView(), dogFilterTexture->getShaderResourceView(), flowPhi, flowSigma_m, inversion, polsterize);
 	flowCurveShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
 
 	renderer->setZBuffer(true);
@@ -503,6 +503,7 @@ void App1::CartoonRenderingPass()
 
 	renderer->setZBuffer(true);
 }
+
 
 
 
@@ -715,10 +716,10 @@ void App1::InitialiseVariables(int screenWidth, int screenHeight)
 	texelSize = XMFLOAT2(1.0f / screenWidth, 1.0f / screenHeight);
 
 	// Flow Curve Controls
-	currentPosition = XMFLOAT2(0.5f, 0.5f);
-	previousTan = XMFLOAT2(0.5f, -0.3f);
-	totLength = 0.0f;
-	curLength = 0.5f;
+	flowPhi = 2.0f;
+	flowSigma_m = 2.0f;
+	inversion = true;
+	polsterize = true;
 
 	// Colour Quantisation Controls
 	transitionSmoothing = 3.4f;
@@ -829,30 +830,13 @@ ID3D11ShaderResourceView* App1::GetSelectedOutputTexture()
 
 }
 
-//void App1::ConvertColourSpace(ID3D11ShaderResourceView* source, RenderTexture* destination)
-//{
-//	destination->setRenderTarget(renderer->getDeviceContext());
-//	destination->clearRenderTarget(renderer->getDeviceContext(), 0, 0, 0, 1);
-//
-//	XMMATRIX world = renderer->getWorldMatrix();
-//	XMMATRIX view = camera->getOrthoViewMatrix();
-//	XMMATRIX ortho = destination->getOrthoMatrix();
-//
-//	renderer->setZBuffer(false);
-//	orthoMesh->sendData(renderer->getDeviceContext());
-//
-//	ycbcrToRgbShader->setShaderParameters(renderer->getDeviceContext(), world, view, ortho, source);
-//	ycbcrToRgbShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
-//
-//	renderer->setZBuffer(true);
-//}
 
 
 void App1::LoadIntextures()
 {
 	textureMgr->loadTexture(L"grass", L"res/grass.jpg"); // Grass Texture
 	textureMgr->loadTexture(L"wood", L"res/sand.jpg"); // Wood Texture
-	textureMgr->loadTexture(L"water", L"res/try.png"); // water Texture
+	textureMgr->loadTexture(L"water", L"res/funny.jpg"); // water Texture
 	textureMgr->loadTexture(L"shipWood", L"res/shipWood.jpg"); // water Texture
 	textureMgr->loadTexture(L"canvas", L"res/canvas.jpg");
 
@@ -936,10 +920,10 @@ void App1::GUI()
 
 		if (ImGui::TreeNode("Flow Curve"))
 		{
-			ImGui::SliderFloat2("Start Position", &currentPosition.x, 0.0f, 1.0f);
-			ImGui::SliderFloat2("Initial Tangent", &previousTan.x, -1.0f, 1.0f);
-			ImGui::SliderFloat("Step Length", &curLength, 0.01f, 10.0f);
-			ImGui::SliderFloat("Total Length", &totLength, 0.0f, 100.0f);
+			ImGui::SliderFloat("phi", &flowPhi, 0.01f, 10.0f);
+			ImGui::SliderFloat("simga_m", &flowSigma_m, 0.0f, 5.0f);
+			ImGui::Checkbox("Invert Lines", &inversion);
+			ImGui::Checkbox("Polsterize", &polsterize);
 			ImGui::TreePop();
 		}
 

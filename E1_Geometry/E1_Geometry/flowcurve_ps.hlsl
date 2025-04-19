@@ -2,47 +2,46 @@ Texture2D flowmap : register(t0);
 Texture2D dogImg  : register(t1);
 SamplerState sampleType : register(s0);
 
-cbuffer cFlowBuffer : register(b0)
-{
-    float2 cpos;
-    float2 pTan; 
-    float tLength;
-    float cLength;
-    float pad[2];
-};
-
-struct InputType
-{
+struct InputType {
     float4 position : SV_POSITION;
     float2 tex : TEXCOORD0;
-    float3 normal : NORMAL;
 };
 
-void Step(inout float2 cpos, inout float2 pTan, inout float tLength, inout float cLength, float2 texelSize)
+cbuffer filterSettings : register(b0)
 {
-    float2 tangent = flowmap.Sample(sampleType, cpos).xy;
-    if (dot(tangent, pTan) < 0.0)
-        tangent = -tangent;
+    float phi;
+    float sigma_m;
+    int invertedLines;
+    int polsterize;
+}
 
-    pTan = tangent;
+struct LIC {
+    float2 p;
+    float2 t;
+    float w;
+    float dw;
+};
 
-    float safeX = max(abs(tangent.x), 0.001);
-    float safeY = max(abs(tangent.y), 0.001);
+void Step(inout LIC s, float2 texelSize) {
+    float2 t = flowmap.Sample(sampleType, s.p).xy;
+    if (dot(t, s.t) < 0.0)
+        t = -t;
+    s.t = t;
 
-    cLength = (abs(tangent.x) > abs(tangent.y)) ?
-        abs((frac(pTan.x) - 0.5 - sign(tangent.x)) / safeX) :
-        abs((frac(pTan.y) - 0.5 - sign(tangent.y)) / safeY);
+    s.dw = (abs(t.x) > abs(t.y)) ?
+        abs((frac(s.p.x) - 0.5 - sign(t.x)) / t.x) :
+        abs((frac(s.p.y) - 0.5 - sign(t.y)) / t.y);
 
-    cpos += tangent * cLength / texelSize;
-    tLength += cLength;
+    s.p += t * s.dw * texelSize;
+    s.w += s.dw;
 }
 
 float4 main(InputType input) : SV_TARGET {
-    float2 uv = input.tex;
+    float2 uv = clamp(input.tex, 0.0, 1.0);
 
-    // Hardcoded parameters
-    float sigma_m = 2.0;
-    float phi = 1.5;
+    // Hardcoded settings
+    //float sigma_m = 2.0;
+    //float phi = 2;
 
     uint width, height;
     dogImg.GetDimensions(width, height);
@@ -54,48 +53,50 @@ float4 main(InputType input) : SV_TARGET {
     float H = dogImg.Sample(sampleType, uv).x;
     float w = 1.0;
 
-    float2 posA = uv;
-    float2 posB = uv;
-    float2 tanA = flowmap.Sample(sampleType, uv).xy / texelSize;
-    float2 tanB = -tanA;
-    float lenA = 0.0;
-    float lenB = 0.0;
-    float stepLen;
+    // Forward and backward streamline integration
+    LIC a, b;
+    a.p = b.p = uv;
+    a.t = flowmap.Sample(sampleType, uv).xy * texelSize;
+    b.t = -a.t;
+    a.w = b.w = 0.0;
 
-    // Forward direction
     [loop]
-    while (lenA < halfWidth) {
-        Step(posA, tanA, lenA, stepLen, texelSize);
-        posA = clamp(posA, 0.0, 1.0);
-        float k = stepLen * exp(-lenA * lenA / twoSigmaMSquared);
-        H += k * dogImg.Sample(sampleType, posA).x;
+    while (a.w < halfWidth) {
+        Step(a, texelSize);
+        float k = a.dw * exp(-a.w * a.w / twoSigmaMSquared);
+        H += k * dogImg.Sample(sampleType, clamp(a.p, 0.0, 1.0)).x;
         w += k;
     }
 
-    // Backward direction
     [loop]
-    while (lenB < halfWidth) {
-        Step(posB, tanB, lenB, stepLen, texelSize);
-        posB = clamp(posB, 0.0, 1.0);
-        float k = stepLen * exp(-lenB * lenB / twoSigmaMSquared);
-        H += k * dogImg.Sample(sampleType, posB).x;
+    while (b.w < halfWidth) {
+        Step(b, texelSize);
+        float k = b.dw * exp(-b.w * b.w / twoSigmaMSquared);
+        H += k * dogImg.Sample(sampleType, clamp(b.p, 0.0, 1.0)).x;
         w += k;
     }
     H /= w;
 
-    // For debug: try visualizing the raw H first
-    return float4(H.xxx, 1.0); 
+    // Smooth edge thresholding
+    float edge = (H > 0.0) ? 1.0 : 2.0 * smoothstep(-2.0, 2.0, phi * H);
 
-    // Try scaling H before thresholding to give it range
-    float scaledH = phi * H;
+    // Invert lines if enabled
+    if (invertedLines == 0) {
+        edge = saturate(1.0 - edge);
+    }
 
-    // Use GLSL-style thresholding
-    float edge = (scaledH > 0.0) ? 1.0 : 2.0 * smoothstep(-2.0, 2.0, scaledH);
-
-    // Optional: invert if you want black lines
-    edge = saturate(1.0 - edge);
+    // Posterize if enabled
+    if (polsterize == 0) {
+        float levels = 5.0; // tweak if needed
+        edge = floor(edge * (levels - 1.0) + 0.5) / (levels - 1.0);
+    }
 
     return float4(edge.xxx, 1.0);
+
+
+
+
+
 
 
 }

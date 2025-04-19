@@ -15,53 +15,46 @@ struct InputType {
 };
 
 float4 main(InputType input) : SV_TARGET {
-    float2 texCoords = input.tex;
+    float twoSigmaD2 = 2.0 * spatial * spatial;
+    float twoSigmaR2 = 2.0 * rangeK * rangeK;
+    float2 uv = input.tex;
 
-    // Sigma terms
-    float twoSpatialSigmaSquared = 2.0 * spatial * spatial;
-    float twoRangeSigmaSquared = 2.0 * rangeK * rangeK;
+    float2 t = flowMap.Sample(sampleType, uv).xy;
+    float2 dir = (passing == 0) ? float2(t.y, -t.x) : t;
 
-    // Sample flow direction
-    float2 tangentFlow = flowMap.Sample(sampleType, texCoords).xy;
+    float2 dabs = abs(dir);
+    float ds = 1.0 / max(dabs.x, dabs.y);
 
-    float2 direction = (passing == 0)
-        ? float2(tangentFlow.y, -tangentFlow.x)  // Gradient direction
-        : tangentFlow;                           // Flow direction
+    // Get texel size
+    uint width, height;
+    inputImage.GetDimensions(width, height);
+    float2 texelSize = 1.0 / float2(width, height);
 
-    // Compute step size based on max axis
-    float2 absDir = abs(direction);
-    float ds = 1.0 / max(absDir.x, absDir.y); // Stable step size
-    direction = normalize(direction);         // We normalize and scale with d later
+    dir *= texelSize;
+
+    float3 center = inputImage.Sample(sampleType, uv).rgb;
+    float3 sum = center;
+    float norm = 1.0;
 
     float halfWidth = 2.0 * spatial;
-
-    float3 centerColor = inputImage.Sample(sampleType, texCoords).rgb;
-    float3 sumColor = centerColor;
-    float normFactor = 1.0;
-
-    // Iterate over kernel using float d
     [loop]
     for (float d = ds; d <= halfWidth; d += ds) {
-        float2 offsetVec = direction * d;
+        float3 c0 = inputImage.Sample(sampleType, uv + d * dir).rgb;
+        float3 c1 = inputImage.Sample(sampleType, uv - d * dir).rgb;
+        float e0 = length(c0 - center);
+        float e1 = length(c1 - center);
 
-        float3 samplePos = inputImage.Sample(sampleType, clamp(texCoords + offsetVec, 0.0, 1.0)).rgb;
-        float3 sampleNeg = inputImage.Sample(sampleType, clamp(texCoords - offsetVec, 0.0, 1.0)).rgb;
+        float kerneld = exp(-d * d / twoSigmaD2);
+        float kernele0 = (e0 < rangeK) ? 1.0 : 0.0;
+        float kernele1 = (e1 < rangeK) ? 1.0 : 0.0;
 
-        float colorDistPos = length(samplePos - centerColor);
-        float colorDistNeg = length(sampleNeg - centerColor);
+        norm += kerneld * kernele0;
+        norm += kerneld * kernele1;
 
-        float spatialWeight = exp(-d * d / twoSpatialSigmaSquared);
-        float rangeWeightPos = exp(-colorDistPos * colorDistPos / twoRangeSigmaSquared);
-        float rangeWeightNeg = exp(-colorDistNeg * colorDistNeg / twoRangeSigmaSquared);
-
-        float weightPos = spatialWeight * rangeWeightPos;
-        float weightNeg = spatialWeight * rangeWeightNeg;
-
-        sumColor += samplePos * weightPos;
-        sumColor += sampleNeg * weightNeg;
-        normFactor += weightPos + weightNeg;
+        sum += kerneld * kernele0 * c0;
+        sum += kerneld * kernele1 * c1;
     }
 
-    float3 finalColor = sumColor / max(normFactor, 1e-6);
-    return float4(finalColor, 1.0);
+    sum /= norm;
+    return float4(sum, 1.0);
 }

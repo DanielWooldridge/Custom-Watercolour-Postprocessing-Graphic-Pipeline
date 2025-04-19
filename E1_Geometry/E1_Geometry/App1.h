@@ -146,10 +146,10 @@ private:
 	XMFLOAT2 texelSize;
 
 	// Flow Curve Controls
-	XMFLOAT2 currentPosition;
-	XMFLOAT2 previousTan;
-	float totLength;
-	float curLength;
+	float flowPhi;
+	float flowSigma_m;
+	bool inversion;
+	bool polsterize;
 
 	// dog flow Controls
 	float dogFlowSmoothing;

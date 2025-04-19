@@ -7,15 +7,14 @@ public:
 	~FlowCurve();
 
 	void setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX& worldMatrix, const XMMATRIX& viewMatrix, const XMMATRIX& projectionMatrix,
-		ID3D11ShaderResourceView* inputTexture, ID3D11ShaderResourceView* dogTexture, XMFLOAT2 currentPosition, XMFLOAT2 previousTan, float totLength, float curLength);
+		ID3D11ShaderResourceView* inputTexture, ID3D11ShaderResourceView* dogTexture, float phi, float sigma_m, bool inveretd, bool polsterize);
 
 	struct FlowCurveFilterType
 	{
-		XMFLOAT2 cPos;
-		XMFLOAT2 pTan;
-		float tLength;
-		float cLength;
-		float pad[2];
+		float phi;
+		float sigma_m;
+		int invertedLines;
+		int polsterize;
 	};
 private:
 
