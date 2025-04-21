@@ -174,7 +174,7 @@ void App1::DepthPass()
 	XMMATRIX worldMatrix = renderer->getWorldMatrix();
 	XMMATRIX viewMatrix = camera->getViewMatrix();
 	XMMATRIX projectionMatrix = renderer->getProjectionMatrix();
-	if (sceneOneActive)
+	if (changeScene)
 	{
 
 		// Render Sphere 
@@ -197,7 +197,7 @@ void App1::DepthPass()
 		// Render Ship Model
 		movementIndicator = no_movement;
 		XMMATRIX shipTranslationMatrix = XMMatrixTranslation(40.0f, 7.0f, 40.0f);
-		XMMATRIX shipScalingMatrix = XMMatrixScaling(2.0f, 2.0f, 2.0f);
+		XMMATRIX shipScalingMatrix = XMMatrixScaling(4.0f, 4.0f, 4.0f);
 		XMMATRIX shipRotationMatrix = XMMatrixRotationX(160);
 		XMMATRIX shipTransformedWorldMatrix = shipRotationMatrix * shipScalingMatrix * shipTranslationMatrix * worldMatrix;
 		ship->sendData(renderer->getDeviceContext());
@@ -272,7 +272,7 @@ void App1::FirstPass()
 
 
 
-	if (sceneOneActive)
+	if (changeScene)
 	{
 		// Render Sphere 
 		XMMATRIX sphereTranslationMatrix = XMMatrixTranslation(30.0f, 14.0f, 60.0f); 
@@ -292,13 +292,27 @@ void App1::FirstPass()
 
 
 		 //Ship model
-		XMMATRIX shipTranslationMatrix = XMMatrixTranslation(40.0f, -1.0f, 40.0f);
-		XMMATRIX shipScalingMatrix = XMMatrixScaling(4.0f, 4.0f, 4.0f);
-		XMMATRIX shipRotationMatrix = XMMatrixRotationX(0);
-		XMMATRIX shipTransformedWorldMatrix = shipRotationMatrix * shipScalingMatrix * shipTranslationMatrix * worldMatrix;
-		ship->sendData(renderer->getDeviceContext());
-		oceanShader->setShaderParameters(renderer->getDeviceContext(), shipTransformedWorldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"shipWood"), totalTime, -amplitude/2, frequency, speed, numWaves, phases, transparency);
-		oceanShader->render(renderer->getDeviceContext(), ship->getIndexCount());
+		if (changeShip)
+		{
+			XMMATRIX shipTranslationMatrix = XMMatrixTranslation(40.0f, -1.0f, 40.0f);
+			XMMATRIX shipScalingMatrix = XMMatrixScaling(4.0f, 4.0f, 4.0f);
+			XMMATRIX shipRotationMatrix = XMMatrixRotationX(0);
+			XMMATRIX shipTransformedWorldMatrix = shipRotationMatrix * shipScalingMatrix * shipTranslationMatrix * worldMatrix;
+			ship->sendData(renderer->getDeviceContext());
+			oceanShader->setShaderParameters(renderer->getDeviceContext(), shipTransformedWorldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"shipWood"), totalTime, -amplitude / 2, frequency, speed, numWaves, phases, transparency);
+			oceanShader->render(renderer->getDeviceContext(), ship->getIndexCount());
+		}
+		else
+		{
+			XMMATRIX shipTranslationMatrix = XMMatrixTranslation(40.0f, 4.0f, 40.0f);
+			XMMATRIX shipScalingMatrix = XMMatrixScaling(12.0f, 12.0f, 12.0f);
+			XMMATRIX shipRotationMatrix = XMMatrixRotationX(0);
+			XMMATRIX shipTransformedWorldMatrix = shipRotationMatrix * shipScalingMatrix * shipTranslationMatrix * worldMatrix;
+			ship2->sendData(renderer->getDeviceContext());
+			oceanShader->setShaderParameters(renderer->getDeviceContext(), shipTransformedWorldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"shipWood2"), totalTime, -amplitude / 10, frequency, speed, numWaves, phases, transparency);
+			oceanShader->render(renderer->getDeviceContext(), ship2->getIndexCount());
+		}
+
 
 		// Render Ocean
 		renderer->setAlphaBlending(true);
@@ -698,6 +712,7 @@ void App1::InitialiseMeshs(int screenWidth, int screenHeight)
 	skybox = new CubeMesh(renderer->getDevice(), renderer->getDeviceContext(), 1); // Skybox mesh
 
 	ship = new AModel(renderer->getDevice(), "res/models/pShip.obj"); // https://sketchfab.com/3d-models/pirate-ship-lowpoly-15aaf52d00dd4c78a984bf97ed9d7967
+	ship2 = new AModel(renderer->getDevice(), "res/models/sShip.obj"); // https://sketchfab.com/3d-models/pirate-ship-lowpoly-15aaf52d00dd4c78a984bf97ed9d7967
 
 }
 
@@ -757,7 +772,8 @@ void App1::InitialiseVariables(int screenWidth, int screenHeight)
 	bf_abstraction = 3.f;
 
 	visualizeInRGB = false;
-	sceneOneActive = true;
+	changeScene = true;
+	changeShip = true;
 }
 
 void App1::InitialiseRenderTextures(int screenWidth, int screenHeight)
@@ -834,7 +850,8 @@ void App1::LoadIntextures()
 	textureMgr->loadTexture(L"grass", L"res/funny.jpg"); // Grass Texture
 	textureMgr->loadTexture(L"wood", L"res/sand.jpg"); // Wood Texture
 	textureMgr->loadTexture(L"water", L"res/water.jpg"); // water Texture
-	textureMgr->loadTexture(L"shipWood", L"res/Shiptexnew.png"); // water Texture
+	textureMgr->loadTexture(L"shipWood", L"res/Shiptexnew.png"); // ship Texture
+	textureMgr->loadTexture(L"shipWood2", L"res/sShipTex.png"); // ship2 Texture
 	textureMgr->loadTexture(L"canvas", L"res/canvas.jpg");
 
 
@@ -1019,7 +1036,8 @@ void App1::GUI()
 	}
 	if (ImGui::CollapsingHeader("Scene", ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		ImGui::Checkbox("Scene 1", &sceneOneActive);
+		ImGui::Checkbox("Change Scene", &changeScene);
+		ImGui::Checkbox("Change Ship", &changeShip);
 	}
 
 	// === Final UI render ===

@@ -99,6 +99,7 @@ private:
 	CubeMesh* cube;
 	CubeMesh* skybox;
 	AModel* ship;
+	AModel* ship2;
 
 
 	//Render To Texture
@@ -180,7 +181,8 @@ private:
 
 	int frameCount = 0;
 
-	bool sceneOneActive;
+	bool changeScene;
+	bool changeShip;
 
 	//Overarching Vairables
 	float totalTime;
