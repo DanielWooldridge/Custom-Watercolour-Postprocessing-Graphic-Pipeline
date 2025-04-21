@@ -48,7 +48,7 @@ protected:
 	void DoGFilterPass();
 	void FlowCurvePass();
 	void ColourQuantizationPass();
-	void CartoonRenderingPass();
+	void CombinePass();
 	void PaperRenderingPass();
 	void ComparisonPass();
 	void TemporalPass();
@@ -84,7 +84,7 @@ private:
 	DifferenceOfGuassian* dogFilterShader;
 	FlowCurve* flowCurveShader;
 	ColourQuantization* cqShader;
-	CartoonRendering* cartoonShader;
+	CartoonRendering* combineShader;
 	PaperShader* paperShader;
 	DepthShader* depthShader;
 	TemporalCoherence* temporalShader;
@@ -113,7 +113,7 @@ private:
 	RenderTexture* dogFilterTexture;
 	RenderTexture* flowCurveTexture;
 	RenderTexture* colourQuantizationTexture;
-	RenderTexture* cartoonRenderTexture;
+	RenderTexture* combineRenderTexture;
 	RenderTexture* paperRenderTexture;
 	RenderTexture* blendedTexture;
 	RenderTexture* previousFrameTexture;
@@ -180,7 +180,7 @@ private:
 
 	int frameCount = 0;
 
-
+	bool sceneOneActive;
 
 	//Overarching Vairables
 	float totalTime;

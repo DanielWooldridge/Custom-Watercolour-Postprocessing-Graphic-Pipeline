@@ -137,7 +137,7 @@ bool App1::Render()
 	ColourQuantizationPass();
 
 	// Step 7: Blending
-	CartoonRenderingPass();
+	CombinePass();
 
 	// Final conversions and presentation
 	YCBCRToRGBPass();
@@ -174,45 +174,52 @@ void App1::DepthPass()
 	XMMATRIX worldMatrix = renderer->getWorldMatrix();
 	XMMATRIX viewMatrix = camera->getViewMatrix();
 	XMMATRIX projectionMatrix = renderer->getProjectionMatrix();
+	if (sceneOneActive)
+	{
 
-	//// Render Sphere
-	//movementIndicator = sine_movement;
-	//XMMATRIX sphereTranslationMatrix = XMMatrixTranslation(60.0f, 10.0f, 50.0f);
-	//XMMATRIX sphereScalingMatrix = XMMatrixScaling(2.0f, 2.0f, 2.0f);
-	//XMMATRIX sphereTransformedWorldMatrix = sphereScalingMatrix * sphereTranslationMatrix * worldMatrix;
-	//sphere->sendData(renderer->getDeviceContext());
-	//depthShader->setShaderParameters(renderer->getDeviceContext(), sphereTransformedWorldMatrix, viewMatrix, projectionMatrix, totalTime, amplitude, frequency, speed, numWaves, phases, transparency, sine_movement);
-	//depthShader->render(renderer->getDeviceContext(), sphere->getIndexCount());
+		// Render Sphere 
+		XMMATRIX sphereTranslationMatrix = XMMatrixTranslation(30.0f, 14.0f, 60.0f);
+		XMMATRIX sphereScalingMatrix = XMMatrixScaling(2.0f, 2.0f, 2.0f);
+		XMMATRIX sphereTransformedWorldMatrix = sphereScalingMatrix * sphereTranslationMatrix * worldMatrix;
+		sphere->sendData(renderer->getDeviceContext());
+		depthShader->setShaderParameters(renderer->getDeviceContext(), sphereTransformedWorldMatrix, viewMatrix, projectionMatrix, totalTime, amplitude, frequency, speed, numWaves, phases, transparency, sine_movement);
+		depthShader->render(renderer->getDeviceContext(), sphere->getIndexCount());
 
-	//// Render Cube
-	//movementIndicator = sine_movement;
-	//XMMATRIX cubeTranslationMatrix = XMMatrixTranslation(50.0f, 10.0f, 62.5f);
-	//XMMATRIX cubeScalingMatrix = XMMatrixScaling(2.0f, 2.0f, 2.0f);
-	//XMMATRIX cubeTransformedWorldMatrix = cubeScalingMatrix * cubeTranslationMatrix * worldMatrix;
-	//cube->sendData(renderer->getDeviceContext());
-	//depthShader->setShaderParameters(renderer->getDeviceContext(), cubeTransformedWorldMatrix, viewMatrix, projectionMatrix, totalTime, amplitude, frequency, speed, numWaves, phases, transparency, sine_movement);
-	//depthShader->render(renderer->getDeviceContext(), cube->getIndexCount());
-
-	// Render Ship Model
-	movementIndicator = no_movement;
-	XMMATRIX shipTranslationMatrix = XMMatrixTranslation(40.0f, 7.0f, 40.0f);
-	XMMATRIX shipScalingMatrix = XMMatrixScaling(2.0f, 2.0f, 2.0f);
-	XMMATRIX shipRotationMatrix = XMMatrixRotationX(160);
-	XMMATRIX shipTransformedWorldMatrix = shipRotationMatrix * shipScalingMatrix * shipTranslationMatrix * worldMatrix;
-	ship->sendData(renderer->getDeviceContext());
-	depthShader->setShaderParameters(renderer->getDeviceContext(), shipTransformedWorldMatrix, viewMatrix, projectionMatrix, totalTime, amplitude, frequency, speed, numWaves, phases, transparency, no_movement);
-	depthShader->render(renderer->getDeviceContext(), ship->getIndexCount());
-
-	// Render Ocean
-	movementIndicator = wave_movement;
-	XMMATRIX oceanTranslationMatrix = XMMatrixTranslation(0.0f, 0.0f, 0.0f);
-	XMMATRIX oceanScalingMatrix = XMMatrixScaling(1.0f, 1.0f, 1.0f);
-	XMMATRIX oceanTransformedWorldMatrix = oceanScalingMatrix * oceanTranslationMatrix * worldMatrix;
-	ocean->sendData(renderer->getDeviceContext());
-	depthShader->setShaderParameters(renderer->getDeviceContext(), oceanTransformedWorldMatrix, viewMatrix, projectionMatrix, totalTime, amplitude, frequency, speed, numWaves, phases, transparency, wave_movement);
-	depthShader->render(renderer->getDeviceContext(), ocean->getIndexCount());
+		// Render Cube
+		XMMATRIX cubeTranslationMatrix = XMMatrixTranslation(50.0f, 14.0f, 20.0f);
+		XMMATRIX cubeScalingMatrix = XMMatrixScaling(2.0f, 2.0f, 2.0f);
+		XMMATRIX cubeTransformedWorldMatrix = cubeScalingMatrix * cubeTranslationMatrix * worldMatrix;
+		cube->sendData(renderer->getDeviceContext());
+		depthShader->setShaderParameters(renderer->getDeviceContext(), cubeTransformedWorldMatrix, viewMatrix, projectionMatrix, totalTime, amplitude, frequency, speed, numWaves, phases, transparency, sine_movement);
+		depthShader->render(renderer->getDeviceContext(), cube->getIndexCount());
 
 
+		// Render Ship Model
+		movementIndicator = no_movement;
+		XMMATRIX shipTranslationMatrix = XMMatrixTranslation(40.0f, 7.0f, 40.0f);
+		XMMATRIX shipScalingMatrix = XMMatrixScaling(2.0f, 2.0f, 2.0f);
+		XMMATRIX shipRotationMatrix = XMMatrixRotationX(160);
+		XMMATRIX shipTransformedWorldMatrix = shipRotationMatrix * shipScalingMatrix * shipTranslationMatrix * worldMatrix;
+		ship->sendData(renderer->getDeviceContext());
+		depthShader->setShaderParameters(renderer->getDeviceContext(), shipTransformedWorldMatrix, viewMatrix, projectionMatrix, totalTime, amplitude, frequency, speed, numWaves, phases, transparency, no_movement);
+		depthShader->render(renderer->getDeviceContext(), ship->getIndexCount());
+
+		// Render Ocean
+		movementIndicator = wave_movement;
+		XMMATRIX oceanTranslationMatrix = XMMatrixTranslation(0.0f, 0.0f, 0.0f);
+		XMMATRIX oceanScalingMatrix = XMMatrixScaling(1.0f, 1.0f, 1.0f);
+		XMMATRIX oceanTransformedWorldMatrix = oceanScalingMatrix * oceanTranslationMatrix * worldMatrix;
+		ocean->sendData(renderer->getDeviceContext());
+		depthShader->setShaderParameters(renderer->getDeviceContext(), oceanTransformedWorldMatrix, viewMatrix, projectionMatrix, totalTime, amplitude, frequency, speed, numWaves, phases, transparency, wave_movement);
+		depthShader->render(renderer->getDeviceContext(), ocean->getIndexCount());
+
+	}
+	else
+	{
+		floor->sendData(renderer->getDeviceContext());
+		depthShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, totalTime, amplitude, frequency, speed, numWaves, phases, transparency, no_movement);
+		depthShader->render(renderer->getDeviceContext(), floor->getIndexCount());
+	}
 
 	// Set back buffer as render target and reset view port.
 	renderer->setBackBufferRenderTarget();
@@ -263,47 +270,54 @@ void App1::FirstPass()
  //   if (originalRasterizerState) { originalRasterizerState->Release(); }
 
 
-	// Render Floor
-	//floor->sendData(renderer->getDeviceContext());
-	//textureShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"grass"));
-	//textureShader->render(renderer->getDeviceContext(), floor->getIndexCount());
-
-	// Render Sphere
-	//XMMATRIX sphereTranslationMatrix = XMMatrixTranslation(60.0f, 10.0f, 50.0f); 
-	//XMMATRIX sphereScalingMatrix = XMMatrixScaling(2.0f, 2.0f, 2.0f); 
-	//XMMATRIX sphereTransformedWorldMatrix = sphereScalingMatrix * sphereTranslationMatrix * worldMatrix;
-	//sphere->sendData(renderer->getDeviceContext());
-	//movementShader->setShaderParameters(renderer->getDeviceContext(), sphereTransformedWorldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"wood"), totalTime, 0.0);
-	//movementShader->render(renderer->getDeviceContext(), floor->getIndexCount());
-
-	//// Render Cube
-	//XMMATRIX cubeTranslationMatrix = XMMatrixTranslation(50.0f, 10.0f, 62.5f);
-	//XMMATRIX cubeScalingMatrix = XMMatrixScaling(2.0f, 2.0f, 2.0f);
-	//XMMATRIX cubeTransformedWorldMatrix = cubeScalingMatrix * cubeTranslationMatrix * worldMatrix;
-	//cube->sendData(renderer->getDeviceContext());
-	//movementShader->setShaderParameters(renderer->getDeviceContext(), cubeTransformedWorldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"wood"), totalTime, 1.0);
-	//movementShader->render(renderer->getDeviceContext(), floor->getIndexCount());
 
 
-	// Ship model
-	//XMMATRIX shipTranslationMatrix = XMMatrixTranslation(40.0f, 7.0f, 40.0f);
-	//XMMATRIX shipScalingMatrix = XMMatrixScaling(2.0f, 2.0f, 2.0f);
-	//XMMATRIX shipRotationMatrix = XMMatrixRotationX(160);
-	//XMMATRIX shipTransformedWorldMatrix = shipRotationMatrix * shipScalingMatrix * shipTranslationMatrix * worldMatrix;
-	//ship->sendData(renderer->getDeviceContext());
-	//textureShader->setShaderParameters(renderer->getDeviceContext(), shipTransformedWorldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"shipWood"));
-	//textureShader->render(renderer->getDeviceContext(), ship->getIndexCount());
+	if (sceneOneActive)
+	{
+		// Render Sphere 
+		XMMATRIX sphereTranslationMatrix = XMMatrixTranslation(30.0f, 14.0f, 60.0f); 
+		XMMATRIX sphereScalingMatrix = XMMatrixScaling(2.0f, 2.0f, 2.0f);
+		XMMATRIX sphereTransformedWorldMatrix = sphereScalingMatrix * sphereTranslationMatrix * worldMatrix;
+		sphere->sendData(renderer->getDeviceContext());
+		movementShader->setShaderParameters(renderer->getDeviceContext(), sphereTransformedWorldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"wood"), totalTime, 0.0);
+		movementShader->render(renderer->getDeviceContext(), sphere->getIndexCount());
 
-	// Render Ocean
-	renderer->setAlphaBlending(true);
-	XMMATRIX oceanTranslationMatrix = XMMatrixTranslation(0.0f, 0.0f, 0.0f);
-	XMMATRIX oceanScalingMatrix = XMMatrixScaling(1.0f, 1.0f, 1.0f);
-	XMMATRIX oceanTransformedWorldMatrix = oceanScalingMatrix * oceanTranslationMatrix * worldMatrix;
-	ocean->sendData(renderer->getDeviceContext());
-	oceanShader->setShaderParameters(renderer->getDeviceContext(), oceanTransformedWorldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"water"), 
-		totalTime, amplitude, frequency, speed, numWaves, phases, transparency);
-	oceanShader->render(renderer->getDeviceContext(), floor->getIndexCount());
-	renderer->setAlphaBlending(false);
+		// Render Cube 
+		XMMATRIX cubeTranslationMatrix = XMMatrixTranslation(50.0f, 14.0f, 20.0f); 
+		XMMATRIX cubeScalingMatrix = XMMatrixScaling(2.0f, 2.0f, 2.0f);
+		XMMATRIX cubeTransformedWorldMatrix = cubeScalingMatrix * cubeTranslationMatrix * worldMatrix;
+		cube->sendData(renderer->getDeviceContext());
+		movementShader->setShaderParameters(renderer->getDeviceContext(), cubeTransformedWorldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"wood"), totalTime, 1.0);
+		movementShader->render(renderer->getDeviceContext(), cube->getIndexCount());
+
+
+		 //Ship model
+		XMMATRIX shipTranslationMatrix = XMMatrixTranslation(40.0f, -1.0f, 40.0f);
+		XMMATRIX shipScalingMatrix = XMMatrixScaling(4.0f, 4.0f, 4.0f);
+		XMMATRIX shipRotationMatrix = XMMatrixRotationX(0);
+		XMMATRIX shipTransformedWorldMatrix = shipRotationMatrix * shipScalingMatrix * shipTranslationMatrix * worldMatrix;
+		ship->sendData(renderer->getDeviceContext());
+		oceanShader->setShaderParameters(renderer->getDeviceContext(), shipTransformedWorldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"shipWood"), totalTime, -amplitude/2, frequency, speed, numWaves, phases, transparency);
+		oceanShader->render(renderer->getDeviceContext(), ship->getIndexCount());
+
+		// Render Ocean
+		renderer->setAlphaBlending(true);
+		XMMATRIX oceanTranslationMatrix = XMMatrixTranslation(0.0f, 0.0f, 0.0f);
+		XMMATRIX oceanScalingMatrix = XMMatrixScaling(1.0f, 1.0f, 1.0f);
+		XMMATRIX oceanTransformedWorldMatrix = oceanScalingMatrix * oceanTranslationMatrix * worldMatrix;
+		ocean->sendData(renderer->getDeviceContext());
+		oceanShader->setShaderParameters(renderer->getDeviceContext(), oceanTransformedWorldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"water"),
+			totalTime, amplitude, frequency, speed, numWaves, phases, transparency);
+		oceanShader->render(renderer->getDeviceContext(), floor->getIndexCount());
+		renderer->setAlphaBlending(false);
+	}
+	else
+	{
+		/* Render Floor*/
+		floor->sendData(renderer->getDeviceContext());
+		textureShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"grass"));
+		textureShader->render(renderer->getDeviceContext(), floor->getIndexCount());
+	}
 
 
 }
@@ -486,20 +500,20 @@ void App1::ColourQuantizationPass()
 	renderer->setZBuffer(true);
 }
 
-void App1::CartoonRenderingPass()
+void App1::CombinePass()
 {
-	cartoonRenderTexture->setRenderTarget(renderer->getDeviceContext());
-	cartoonRenderTexture->clearRenderTarget(renderer->getDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
+	combineRenderTexture->setRenderTarget(renderer->getDeviceContext());
+	combineRenderTexture->clearRenderTarget(renderer->getDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
 
 	XMMATRIX worldMatrix = renderer->getWorldMatrix();
-	XMMATRIX orthoMatrix = cartoonRenderTexture->getOrthoMatrix();
+	XMMATRIX orthoMatrix = combineRenderTexture->getOrthoMatrix();
 	XMMATRIX orthoViewMatrix = camera->getOrthoViewMatrix();
 
 	renderer->setZBuffer(false);
 
 	orthoMesh->sendData(renderer->getDeviceContext());
-	cartoonShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, flowCurveTexture->getShaderResourceView(), colourQuantizationTexture->getShaderResourceView());
-	cartoonShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
+	combineShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, flowCurveTexture->getShaderResourceView(), colourQuantizationTexture->getShaderResourceView());
+	combineShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
 
 	renderer->setZBuffer(true);
 }
@@ -544,7 +558,7 @@ void App1::YCBCRToRGBPass()
 	renderer->setZBuffer(false);
 
 	orthoMesh->sendData(renderer->getDeviceContext());
-	ycbcrToRgbShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, orthoMatrix, cartoonRenderTexture->getShaderResourceView()); 
+	ycbcrToRgbShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, orthoMatrix, combineRenderTexture->getShaderResourceView()); 
 	ycbcrToRgbShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
 
 	renderer->setZBuffer(true);
@@ -666,7 +680,7 @@ void App1::InitialiseShaders(HINSTANCE hinstance, HWND hwnd, int screenWidth, in
 	dogFilterShader = new DifferenceOfGuassian(renderer->getDevice(), hwnd);
 	flowCurveShader = new FlowCurve(renderer->getDevice(), hwnd);
 	cqShader = new ColourQuantization(renderer->getDevice(), hwnd);
-	cartoonShader = new CartoonRendering(renderer->getDevice(), hwnd);
+	combineShader = new CartoonRendering(renderer->getDevice(), hwnd);
 	paperShader = new PaperShader(renderer->getDevice(), hwnd);
 	depthShader = new DepthShader(renderer->getDevice(), hwnd);
 	temporalShader = new TemporalCoherence(renderer->getDevice(), hwnd);
@@ -683,7 +697,7 @@ void App1::InitialiseMeshs(int screenWidth, int screenHeight)
 	cube = new CubeMesh(renderer->getDevice(), renderer->getDeviceContext());  // Cube mesh	
 	skybox = new CubeMesh(renderer->getDevice(), renderer->getDeviceContext(), 1); // Skybox mesh
 
-	ship = new AModel(renderer->getDevice(), "res/models/ship.obj"); // https://sketchfab.com/3d-models/ship-g-4249f44c9f334432bd026a7dd7787058#download
+	ship = new AModel(renderer->getDevice(), "res/models/pShip.obj"); // https://sketchfab.com/3d-models/pirate-ship-lowpoly-15aaf52d00dd4c78a984bf97ed9d7967
 
 }
 
@@ -743,7 +757,7 @@ void App1::InitialiseVariables(int screenWidth, int screenHeight)
 	bf_abstraction = 3.f;
 
 	visualizeInRGB = false;
-
+	sceneOneActive = true;
 }
 
 void App1::InitialiseRenderTextures(int screenWidth, int screenHeight)
@@ -758,7 +772,7 @@ void App1::InitialiseRenderTextures(int screenWidth, int screenHeight)
 	dogFilterTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 	flowCurveTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 	colourQuantizationTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
-	cartoonRenderTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
+	combineRenderTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 	paperRenderTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 	depthTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 	blendedTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
@@ -773,57 +787,40 @@ ID3D11ShaderResourceView* App1::GetSelectedOutputTexture()
 {
 	switch (selectedTexture)
 	{
-	case 0: // Original Render Texture
-		return renderTexture->getShaderResourceView();
-		break;
-	case 1: // Bilateral Filter Texture
-		return bilateralFilterTexture->getShaderResourceView();
-		break;
-	case 2: // Final Bilateral Texture
-		return finalBilateralTexture->getShaderResourceView();
-		break;
-	case 3: // structure Tensor Texture
-		return structureTensorTexture->getShaderResourceView();
-		break;
-	case 4: // smoothed flow map Texture
-		return verticalBlurTexture->getShaderResourceView();
-		break;
-	case 5: //smoothed structure tensor Horizontally
-		return horizontalBlurTexture->getShaderResourceView();
-		break;
-	case 6: //smoothed structure tensor Horizontally
-		return dogFilterTexture->getShaderResourceView();
-		break;
-	case 7: // Flow Curve Texture
-		return flowCurveTexture->getShaderResourceView();
-		break;
-	case 8: // CQ Texture
-		return colourQuantizationTexture->getShaderResourceView();
-		break;
-	case 9: // Blended Texture
-		return cartoonRenderTexture->getShaderResourceView();
-		break;
-	case 10: // Paper Overlay Texture
-		return paperRenderTexture->getShaderResourceView();
-		break;
-	case 11: // Depth texture
-		return depthTexture->getShaderResourceView();
-		break;
-	case 12: // Temporal Coherence Texture
-		return blendedTexture->getShaderResourceView();
-		break;
-	case 13: // Previous Frame Texture
-		return previousFrameTexture->getShaderResourceView();
-		break;
-	case 14: // Final putput in YCBCR Texture
-		return ycbcrTexture->getShaderResourceView();
-		break;
-	case 15: // Final Ouput in RGB Texture
-		return rgbTexture->getShaderResourceView();
-		break;
-	default: // Original Render Texture
-		return renderTexture->getShaderResourceView();
-		break;
+	case 0:
+		return renderTexture->getShaderResourceView(); // Original Scene
+	case 1:
+		return ycbcrTexture->getShaderResourceView(); // Colour conevrsion
+	case 2:
+		return structureTensorTexture->getShaderResourceView(); // Structure Tensor
+	case 3:
+		return horizontalBlurTexture->getShaderResourceView(); // Horizontal Smoothing
+	case 4:
+		return verticalBlurTexture->getShaderResourceView(); // Vertical Smoothing (Flow Map)
+	case 5:
+		return bilateralFilterTexture->getShaderResourceView(); // BF1
+	case 6:
+		return finalBilateralTexture->getShaderResourceView(); // BF2
+	case 7:
+		return dogFilterTexture->getShaderResourceView(); // DoG
+	case 8:
+		return flowCurveTexture->getShaderResourceView(); // Flow Curve DoG
+	case 9:
+		return colourQuantizationTexture->getShaderResourceView(); // CQ
+	case 10:
+		return combineRenderTexture->getShaderResourceView(); // Cartoon Pass
+	case 11:
+		return rgbTexture->getShaderResourceView(); // Colour conversion
+	case 12:
+		return paperRenderTexture->getShaderResourceView(); // Paper Overlay
+	case 13:
+		return blendedTexture->getShaderResourceView(); // Temporal Blend
+	case 14:
+		return previousFrameTexture->getShaderResourceView(); // Previous Frame
+	case 15:
+		return depthTexture->getShaderResourceView(); // Depth
+	default:
+		return renderTexture->getShaderResourceView(); // default
 	}
 
 
@@ -834,10 +831,10 @@ ID3D11ShaderResourceView* App1::GetSelectedOutputTexture()
 
 void App1::LoadIntextures()
 {
-	textureMgr->loadTexture(L"grass", L"res/grass.jpg"); // Grass Texture
+	textureMgr->loadTexture(L"grass", L"res/funny.jpg"); // Grass Texture
 	textureMgr->loadTexture(L"wood", L"res/sand.jpg"); // Wood Texture
-	textureMgr->loadTexture(L"water", L"res/funny.jpg"); // water Texture
-	textureMgr->loadTexture(L"shipWood", L"res/shipWood.jpg"); // water Texture
+	textureMgr->loadTexture(L"water", L"res/water.jpg"); // water Texture
+	textureMgr->loadTexture(L"shipWood", L"res/Shiptexnew.png"); // water Texture
 	textureMgr->loadTexture(L"canvas", L"res/canvas.jpg");
 
 
@@ -881,23 +878,15 @@ void App1::GUI()
 		if (ImGui::TreeNode("Output Texture"))
 		{
 			const char* textureOptions[] = {
-				"01 - Original Scene (Base Color Pass)",
-				"02 - Bilateral Filter (Edge Pass)",
-				"03 - Bilateral Filter (Final Output)",
-				"04 - Structure Tensor (Raw)",
-				"05 - Flow Map (Smoothed Vertically)",
-				"06 - Structure Tensor (Smoothed Horizontally)",
-				"07 - DoG Filter (Edge Detection)",
-				"08 - DoG via Flow Curve",
-				"09 - Colour Quantization",
-				"10 - Cartoon Rendering",
-				"11 - Paper Overlay",
-				"12 - Depth Map",
-				"13 - Temporal Blend Result",
-				"14 - Previous Frame",
-				"15 - Final YCbCr Output",
-				"16 - Final RGB Output"
+				"01 - Original Scene (Base Color Pass)", "02 - RGB to YCbCr", "03 - Structure Tensor (Raw)",
+				"04 - Structure Tensor (Smoothed Horizontally)", "05 - Flow Map (Smoothed Vertically)",
+				"06 - Bilateral Filter (first)", "07 - Bilateral Filter (second)",
+				"08 - DoG Filter (Edge Detection)", "09 - DoG via Flow Curve",
+				"10 - Colour Quantization", "11 - Combined Texture",
+				"12 - YCbCr to RGB Output", "13 - Paper Overlay",
+				"14 - Temporal Blended Frame", "15 - Previous Frame", "16 - Depth Map"
 			};
+
 
 			ImGui::Combo("Texture", &selectedTexture, textureOptions, IM_ARRAYSIZE(textureOptions));
 			ImGui::TreePop();
@@ -1027,6 +1016,10 @@ void App1::GUI()
 			arcballCamera.SetTarget(arcballTarget);
 			arcballCamera.SetAngle(verticalAngle);
 		}
+	}
+	if (ImGui::CollapsingHeader("Scene", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		ImGui::Checkbox("Scene 1", &sceneOneActive);
 	}
 
 	// === Final UI render ===
