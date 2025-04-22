@@ -245,7 +245,7 @@ void App1::FirstPass()
 		XMMATRIX sphereScalingMatrix = XMMatrixScaling(2.0f, 2.0f, 2.0f);
 		XMMATRIX sphereTransformedWorldMatrix = sphereScalingMatrix * sphereTranslationMatrix * worldMatrix;
 		sphere->sendData(renderer->getDeviceContext());
-		movementShader->setShaderParameters(renderer->getDeviceContext(), sphereTransformedWorldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"wood"), totalTime, 0.0);
+		movementShader->setShaderParameters(renderer->getDeviceContext(), sphereTransformedWorldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"sand"), totalTime, 0.0);
 		movementShader->render(renderer->getDeviceContext(), sphere->getIndexCount());
 
 		// Render Cube 
@@ -253,7 +253,7 @@ void App1::FirstPass()
 		XMMATRIX cubeScalingMatrix = XMMatrixScaling(2.0f, 2.0f, 2.0f);
 		XMMATRIX cubeTransformedWorldMatrix = cubeScalingMatrix * cubeTranslationMatrix * worldMatrix;
 		cube->sendData(renderer->getDeviceContext());
-		movementShader->setShaderParameters(renderer->getDeviceContext(), cubeTransformedWorldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"wood"), totalTime, 1.0);
+		movementShader->setShaderParameters(renderer->getDeviceContext(), cubeTransformedWorldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"sand"), totalTime, 1.0);
 		movementShader->render(renderer->getDeviceContext(), cube->getIndexCount());
 
 
@@ -293,12 +293,9 @@ void App1::FirstPass()
 	}
 	else
 	{
-		// Render Floor
-		XMMATRIX planeScale = XMMatrixScaling(0.125f, 0.125f, 0.09375f); 
-
-
+		// Render Picture
 		floor->sendData(renderer->getDeviceContext());
-		textureShader->setShaderParameters(renderer->getDeviceContext(), planeScale, viewMatrix, projectionMatrix, textureMgr->getTexture(L"originalImage"));
+		textureShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"picture"));
 		textureShader->render(renderer->getDeviceContext(), floor->getIndexCount());
 
 	}
@@ -703,8 +700,8 @@ void App1::InitialiseVariables(int screenWidth, int screenHeight)
 	spatial = 1.0f; 
 
 	// DoG Controls
-	sensitivity = 10.0f;
-	smoothing = 0.72f;
+	sensitivity = 2.0f;
+	smoothing = 2.5f;
 	tau = 1;
 	texelSize = XMFLOAT2(1.0f / screenWidth, 1.0f / screenHeight);
 
@@ -814,8 +811,8 @@ ID3D11ShaderResourceView* App1::GetSelectedOutputTexture()
 // Load in Textures
 void App1::LoadIntextures()
 {
-	textureMgr->loadTexture(L"originalImage", L"res/OriginalImage.png"); // Grass Texture
-	textureMgr->loadTexture(L"wood", L"res/sand.jpg"); // Wood Texture
+	textureMgr->loadTexture(L"picture", L"res/me.jpg"); // Picture Texture
+	textureMgr->loadTexture(L"sand", L"res/sand.jpg"); // Sand Texture
 	textureMgr->loadTexture(L"water", L"res/water.jpg"); // water Texture
 	textureMgr->loadTexture(L"shipWood", L"res/Shiptexnew.png"); // ship Texture
 	textureMgr->loadTexture(L"shipWood2", L"res/sShipTex.png"); // ship2 Texture
