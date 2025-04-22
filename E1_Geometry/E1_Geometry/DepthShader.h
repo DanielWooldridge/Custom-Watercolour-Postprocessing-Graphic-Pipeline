@@ -8,17 +8,17 @@ public:
 
     struct WaveParams
     {
-        float time;                     // 4 bytes
-        float amplitude;                 // 4 bytes
-        float speed;                     // 4 bytes
-        float frequency;                 // 4 bytes 
+        float time;               
+        float amplitude;               
+        float speed;                  
+        float frequency;                 
 
-        float numWaves;                   // 4 bytes
-        float phases;                     // 4 bytes
-        float transparency;               // 4 bytes
-        float movementType;               // 4 bytes 
+        float numWaves;                 
+        float phases;                  
+        float transparency;              
+        float movementType;               
 
-        float padding[4];                 // Extra padding for alignment
+        float padding[4];                 
     };
 
 

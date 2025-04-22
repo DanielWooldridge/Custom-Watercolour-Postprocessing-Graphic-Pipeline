@@ -20,9 +20,10 @@ float4 main(InputType input) : SV_TARGET
 {
 	float4 currentTex = currentTexture.Sample(sampleState, input.tex);
 	float4 previousTex = previousTexture.Sample(sampleState, input.tex);
-	//return previousTex;
+
+	// create opposite blend strength
 	float prevWeight = 1 - blendStrength;
 
 	return currentTex * blendStrength + previousTex * prevWeight;
-	//return lerp(currentTex, previousTex, 0.9);
+
 }

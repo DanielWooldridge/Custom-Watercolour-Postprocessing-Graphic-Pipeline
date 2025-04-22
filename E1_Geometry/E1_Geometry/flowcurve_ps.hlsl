@@ -1,5 +1,5 @@
-Texture2D flowmap : register(t0);
-Texture2D dogImg  : register(t1);
+Texture2D flowMap : register(t0);
+Texture2D dogImage : register(t1);
 SamplerState sampleType : register(s0);
 
 struct InputType {
@@ -15,66 +15,72 @@ cbuffer filterSettings : register(b0)
     int polsterize;
 }
 
-struct LIC {
-    float2 p;
-    float2 t;
-    float w;
-    float dw;
+struct StepState {
+    float2 uv;
+    float2 flowDir;
+    float totalLength;
+    float stepDistance;
 };
 
-void Step(inout LIC s, float2 texelSize) {
-    float2 t = flowmap.Sample(sampleType, s.p).xy;
-    if (dot(t, s.t) < 0.0)
-        t = -t;
-    s.t = t;
+// Step Function to move along flow field
+void Step(inout StepState s, float2 texelSize) {
+    float2 sampledFlow = flowMap.Sample(sampleType, s.uv).xy;
 
-    s.dw = (abs(t.x) > abs(t.y)) ?
-        abs((frac(s.p.x) - 0.5 - sign(t.x)) / t.x) :
-        abs((frac(s.p.y) - 0.5 - sign(t.y)) / t.y);
+    // Flip direction to maintain consistent flow
+    if (dot(sampledFlow, s.flowDir) < 0.0)
+        sampledFlow = -sampledFlow;
+    s.flowDir = sampledFlow;
 
-    s.p += t * s.dw * texelSize;
-    s.w += s.dw;
+    // Compute distance to next texel 
+    s.stepDistance = (abs(sampledFlow.x) > abs(sampledFlow.y)) ?
+        abs((frac(s.uv.x) - 0.5 - sign(sampledFlow.x)) / sampledFlow.x) :
+        abs((frac(s.uv.y) - 0.5 - sign(sampledFlow.y)) / sampledFlow.y);
+
+    // Move along flow direction
+    s.uv += sampledFlow * s.stepDistance * texelSize;
+    s.totalLength += s.stepDistance;
 }
 
 float4 main(InputType input) : SV_TARGET {
     float2 uv = clamp(input.tex, 0.0, 1.0);
 
-    // Hardcoded settings
-    //float sigma_m = 2.0;
-    //float phi = 2;
-
+    // Get texture size
     uint width, height;
-    dogImg.GetDimensions(width, height);
+    dogImage.GetDimensions(width, height);
     float2 texelSize = 1.0 / float2(width, height);
 
     float twoSigmaMSquared = 2.0 * sigma_m * sigma_m;
     float halfWidth = 2.0 * sigma_m;
 
-    float H = dogImg.Sample(sampleType, uv).x;
+    float H = dogImage.Sample(sampleType, uv).x;
     float w = 1.0;
 
-    // Forward and backward streamline integration
-    LIC a, b;
-    a.p = b.p = uv;
-    a.t = flowmap.Sample(sampleType, uv).xy * texelSize;
-    b.t = -a.t;
-    a.w = b.w = 0.0;
+    // Set up struct values
+    StepState forward, backward;
+    forward.uv = backward.uv = uv;
+    forward.flowDir = flowMap.Sample(sampleType, uv).xy * texelSize;
+    backward.flowDir = -forward.flowDir;
+    forward.totalLength = backward.totalLength = 0.0;
 
     [loop]
-    while (a.w < halfWidth) {
-        Step(a, texelSize);
-        float k = a.dw * exp(-a.w * a.w / twoSigmaMSquared);
-        H += k * dogImg.Sample(sampleType, clamp(a.p, 0.0, 1.0)).x;
+    // Foward step
+    while (forward.totalLength < halfWidth) {
+        Step(forward, texelSize);
+        float k = forward.stepDistance * exp(-forward.totalLength * forward.totalLength / twoSigmaMSquared);
+        H += k * dogImage.Sample(sampleType, clamp(forward.uv, 0.0, 1.0)).x;
         w += k;
     }
 
     [loop]
-    while (b.w < halfWidth) {
-        Step(b, texelSize);
-        float k = b.dw * exp(-b.w * b.w / twoSigmaMSquared);
-        H += k * dogImg.Sample(sampleType, clamp(b.p, 0.0, 1.0)).x;
+    // backward step
+    while (backward.totalLength < halfWidth) {
+        Step(backward, texelSize);
+        float k = backward.stepDistance * exp(-backward.totalLength * backward.totalLength / twoSigmaMSquared);
+        H += k * dogImage.Sample(sampleType, clamp(backward.uv, 0.0, 1.0)).x;
         w += k;
     }
+
+    // Normalize
     H /= w;
 
     // Smooth edge thresholding
@@ -92,11 +98,4 @@ float4 main(InputType input) : SV_TARGET {
     }
 
     return float4(edge.xxx, 1.0);
-
-
-
-
-
-
-
 }

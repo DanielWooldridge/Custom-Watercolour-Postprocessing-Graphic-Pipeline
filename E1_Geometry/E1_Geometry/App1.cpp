@@ -31,25 +31,6 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	InitialiseVariables(screenWidth, screenHeight);
 
 
-	// Rasterizer state for rendering skybox
-	D3D11_RASTERIZER_DESC rasterDesc;
-	ZeroMemory(&rasterDesc, sizeof(rasterDesc));
-
-	// Set the properties for the rasterizer state
-	rasterDesc.FillMode = D3D11_FILL_SOLID;  // Solid fill
-	rasterDesc.CullMode = D3D11_CULL_NONE;   // No culling for the skybox (so all faces are visible)
-	rasterDesc.FrontCounterClockwise = false;
-	rasterDesc.DepthBias = D3D11_DEFAULT_DEPTH_BIAS;
-	rasterDesc.SlopeScaledDepthBias = D3D11_DEFAULT_SLOPE_SCALED_DEPTH_BIAS;
-	rasterDesc.DepthClipEnable = true;        // Depth clipping enabled
-	rasterDesc.ScissorEnable = false;         // No scissor test
-	rasterDesc.MultisampleEnable = false;
-	rasterDesc.AntialiasedLineEnable = false;
-
-	// Create the rasterizer state
-	renderer->getDevice()->CreateRasterizerState(&rasterDesc, &skyboxRasterizerState);
-
-
 
 }
 
@@ -101,11 +82,12 @@ bool App1::frame()
 
 bool App1::Render()
 {
+
 	DepthPass();                 
 
 	FirstPass();    
 
-	
+	// Inital Colour Conversion
 	RGBToYCBCRPass();
 	
 	// Step 1: Structure Tensor and Flow Map generation
@@ -150,7 +132,7 @@ bool App1::Render()
 }
 
 
-
+// Gets Depth
 void App1::DepthPass()
 {
 	// Set the depth render target and clear it
@@ -194,18 +176,29 @@ void App1::DepthPass()
 		depthShader->render(renderer->getDeviceContext(), cube->getIndexCount());
 
 
-		// Render Ship Model
-		movementIndicator = no_movement;
-		XMMATRIX shipTranslationMatrix = XMMatrixTranslation(40.0f, 7.0f, 40.0f);
-		XMMATRIX shipScalingMatrix = XMMatrixScaling(4.0f, 4.0f, 4.0f);
-		XMMATRIX shipRotationMatrix = XMMatrixRotationX(160);
-		XMMATRIX shipTransformedWorldMatrix = shipRotationMatrix * shipScalingMatrix * shipTranslationMatrix * worldMatrix;
-		ship->sendData(renderer->getDeviceContext());
-		depthShader->setShaderParameters(renderer->getDeviceContext(), shipTransformedWorldMatrix, viewMatrix, projectionMatrix, totalTime, amplitude, frequency, speed, numWaves, phases, transparency, no_movement);
-		depthShader->render(renderer->getDeviceContext(), ship->getIndexCount());
+		if (changeShip)
+		{
+			// Render Ship Model
+			XMMATRIX shipTranslationMatrix = XMMatrixTranslation(40.0f, -1.0f, 40.0f);
+			XMMATRIX shipScalingMatrix = XMMatrixScaling(4.0f, 4.0f, 4.0f);
+			XMMATRIX shipRotationMatrix = XMMatrixRotationX(160);
+			XMMATRIX shipTransformedWorldMatrix = shipRotationMatrix * shipScalingMatrix * shipTranslationMatrix * worldMatrix;
+			ship->sendData(renderer->getDeviceContext());
+			depthShader->setShaderParameters(renderer->getDeviceContext(), shipTransformedWorldMatrix, viewMatrix, projectionMatrix, totalTime, -amplitude / 2 , frequency, speed, numWaves, phases, transparency, wave_movement);
+			depthShader->render(renderer->getDeviceContext(), ship->getIndexCount());
+		}
+		else
+		{
+			XMMATRIX shipTranslationMatrix = XMMatrixTranslation(40.0f, 4.0f, 40.0f);
+			XMMATRIX shipScalingMatrix = XMMatrixScaling(17.0f, 17.0f, 17.0f);
+			XMMATRIX shipRotationMatrix = XMMatrixRotationX(0);
+			XMMATRIX shipTransformedWorldMatrix = shipRotationMatrix * shipScalingMatrix * shipTranslationMatrix * worldMatrix;
+			ship2->sendData(renderer->getDeviceContext());
+			depthShader->setShaderParameters(renderer->getDeviceContext(), shipTransformedWorldMatrix, viewMatrix, projectionMatrix, totalTime, -amplitude / 10, frequency, speed, numWaves, phases, transparency, wave_movement);
+			depthShader->render(renderer->getDeviceContext(), ship2->getIndexCount());
+		}
 
 		// Render Ocean
-		movementIndicator = wave_movement;
 		XMMATRIX oceanTranslationMatrix = XMMatrixTranslation(0.0f, 0.0f, 0.0f);
 		XMMATRIX oceanScalingMatrix = XMMatrixScaling(1.0f, 1.0f, 1.0f);
 		XMMATRIX oceanTransformedWorldMatrix = oceanScalingMatrix * oceanTranslationMatrix * worldMatrix;
@@ -226,10 +219,10 @@ void App1::DepthPass()
 	renderer->resetViewport();
 }
 
-
+// Render Scene
 void App1::FirstPass()
 {
-	// Clear the scene. (default blue colour)
+	// Clear the scene - base blue colour
 	renderTexture->setRenderTarget(renderer->getDeviceContext());
 	renderTexture->clearRenderTarget(renderer->getDeviceContext(), 0.0f, 0.5f, 0.8f, 1.0f);
 
@@ -239,37 +232,10 @@ void App1::FirstPass()
 	// Time
 	totalTime += timer->getTime();
 
-	// Get the world, view, projection, and ortho matrices from the camera and Direct3D objects.
+	// Get the world, view, projection, and ortho matrices 
 	XMMATRIX worldMatrix = renderer->getWorldMatrix();
 	XMMATRIX viewMatrix = camera->getViewMatrix();
 	XMMATRIX projectionMatrix = renderer->getProjectionMatrix();
-
-	//// Save the current rasterizer state and set the skybox-specific one.
- //   ID3D11RasterizerState* originalRasterizerState;
- //   renderer->getDeviceContext()->RSGetState(&originalRasterizerState);
- //   renderer->getDeviceContext()->RSSetState(skyboxRasterizerState);
-
-
-
- //   // Render Skybox
-	//XMMATRIX skyboxViewMatrix = XMMatrixIdentity(); // No translation, keep skybox stationary
-
-
-	//XMMATRIX skyboxTranslationMatrix = XMMatrixTranslation(camera->getPosition().x, camera->getPosition().y, camera->getPosition().z);
- //   //XMMATRIX skyboxTranslationMatrix = XMMatrixTranslation(25, 10, 25);
- //   XMMATRIX skyboxScalingMatrix = XMMatrixScaling(100.0f, 100.0f, 100.0f);
- //   XMMATRIX skyboxTransformedWorldMatrix = worldMatrix * skyboxScalingMatrix * skyboxTranslationMatrix;
-
- //   skybox->sendData(renderer->getDeviceContext());
- //   skyboxShader->setShaderParameters(renderer->getDeviceContext(), skyboxTransformedWorldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"skyboxTexture"));
- //   skyboxShader->render(renderer->getDeviceContext(), skybox->getIndexCount());
-
- //    //Reset rasterizer state back to original for the rest of the scene.
-
- //   renderer->getDeviceContext()->RSSetState(originalRasterizerState);
- //   if (originalRasterizerState) { originalRasterizerState->Release(); }
-
-
 
 
 	if (changeScene)
@@ -305,7 +271,7 @@ void App1::FirstPass()
 		else
 		{
 			XMMATRIX shipTranslationMatrix = XMMatrixTranslation(40.0f, 4.0f, 40.0f);
-			XMMATRIX shipScalingMatrix = XMMatrixScaling(12.0f, 12.0f, 12.0f);
+			XMMATRIX shipScalingMatrix = XMMatrixScaling(17.0f, 17.0f, 17.0f);
 			XMMATRIX shipRotationMatrix = XMMatrixRotationX(0);
 			XMMATRIX shipTransformedWorldMatrix = shipRotationMatrix * shipScalingMatrix * shipTranslationMatrix * worldMatrix;
 			ship2->sendData(renderer->getDeviceContext());
@@ -327,15 +293,21 @@ void App1::FirstPass()
 	}
 	else
 	{
-		/* Render Floor*/
+		// Render Floor
+		XMMATRIX planeScale = XMMatrixScaling(0.125f, 0.125f, 0.09375f); 
+
+
 		floor->sendData(renderer->getDeviceContext());
-		textureShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"grass"));
+		textureShader->setShaderParameters(renderer->getDeviceContext(), planeScale, viewMatrix, projectionMatrix, textureMgr->getTexture(L"originalImage"));
 		textureShader->render(renderer->getDeviceContext(), floor->getIndexCount());
+
 	}
 
 
 }
 
+
+// Convert scene texture to Luminance and Chrominance
 void App1::RGBToYCBCRPass()
 {
 	ycbcrTexture->setRenderTarget(renderer->getDeviceContext());
@@ -355,7 +327,7 @@ void App1::RGBToYCBCRPass()
 	renderer->setBackBufferRenderTarget();
 }
 
-
+// Create Structure Tensor
 void App1::StructureTensorPass()
 {
 	XMMATRIX worldMatrix, baseViewMatrix, orthoMatrix;
@@ -374,10 +346,10 @@ void App1::StructureTensorPass()
 	// Send mesh data to the rendering context
 	orthoMesh->sendData(renderer->getDeviceContext());
 
-	// Set shader parameters for the horizontal blur shader
+	// Set shader parameters
 	structureTensorShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, baseViewMatrix, orthoMatrix, renderTexture->getShaderResourceView());
 
-	// Render using the horizontal blur shader
+	// Render 
 	structureTensorShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
 
 	// Re-enable the Z buffer
@@ -388,6 +360,7 @@ void App1::StructureTensorPass()
 	renderer->setBackBufferRenderTarget();
 }
 
+// Blur Structure Tensor Horizontally
 void App1::HorizontalSmoothingPass()
 {
 	horizontalBlurTexture->setRenderTarget(renderer->getDeviceContext());
@@ -407,6 +380,7 @@ void App1::HorizontalSmoothingPass()
 	renderer->setBackBufferRenderTarget();
 }
 
+// Blur Structure Tensor Vertically and Generate Flow Map
 void App1::VerticalSmoothingPass()
 {
 	// Set the vertical blur render target
@@ -432,6 +406,7 @@ void App1::VerticalSmoothingPass()
 	renderer->setBackBufferRenderTarget();
 }
 
+// Create Bilateral Filter - Smooth edges and preserve details
 void App1::BilateralFilterPass(RenderTexture* input, RenderTexture* output, bool isHorizontal)
 {
 	output->setRenderTarget(renderer->getDeviceContext());
@@ -453,6 +428,7 @@ void App1::BilateralFilterPass(RenderTexture* input, RenderTexture* output, bool
 
 }
 
+// Create edge detection via uniform
 void App1::DoGFilterPass()
 {
 	dogFilterTexture->setRenderTarget(renderer->getDeviceContext());
@@ -473,7 +449,7 @@ void App1::DoGFilterPass()
 	renderer->setBackBufferRenderTarget();
 }
 
-
+// Create edge detecion via direction
 void App1::FlowCurvePass()
 {
 
@@ -493,7 +469,7 @@ void App1::FlowCurvePass()
 	renderer->setZBuffer(true);
 }
 
-
+// Dumb down colours
 void App1::ColourQuantizationPass()
 {
 
@@ -514,6 +490,7 @@ void App1::ColourQuantizationPass()
 	renderer->setZBuffer(true);
 }
 
+// Add CQ and Edges together
 void App1::CombinePass()
 {
 	combineRenderTexture->setRenderTarget(renderer->getDeviceContext());
@@ -534,7 +511,7 @@ void App1::CombinePass()
 
 
 
-
+// Create temporal Blending
 void App1::TemporalPass() 
 {
 	blendedTexture->setRenderTarget(renderer->getDeviceContext());
@@ -560,6 +537,7 @@ void App1::TemporalPass()
 	renderer->setZBuffer(true);
 }
 
+// Convert colour space back to RGB
 void App1::YCBCRToRGBPass()
 {
 	rgbTexture->setRenderTarget(renderer->getDeviceContext());
@@ -579,6 +557,7 @@ void App1::YCBCRToRGBPass()
 	renderer->setBackBufferRenderTarget();
 }
 
+// Add paper texture, strength via depth
 void App1::PaperRenderingPass()
 {
 	paperRenderTexture->setRenderTarget(renderer->getDeviceContext());
@@ -597,44 +576,33 @@ void App1::PaperRenderingPass()
 	renderer->setZBuffer(true);
 }
 
+// Tool pass to show the original scene to a selected shader through the process
 void App1::ComparisonPass()
 {
-	// Set the comparison texture as the render target
+	
 	comparisonTexture->setRenderTarget(renderer->getDeviceContext());
 	comparisonTexture->clearRenderTarget(renderer->getDeviceContext(), 0.0f, 0.5f, 0.5f, 1.0f);
 
-	// Get orthographic matrices for rendering
 	XMMATRIX worldMatrix = renderer->getWorldMatrix();
 	XMMATRIX orthoMatrix = comparisonTexture->getOrthoMatrix();
 	XMMATRIX orthoViewMatrix = camera->getOrthoViewMatrix();
 
-	// Disable the depth buffer for 2D rendering
 	renderer->setZBuffer(false);
 
-	// Send ortho mesh data to the rendering context
 	orthoMesh->sendData(renderer->getDeviceContext());
-
-	// Determine which texture to pass based on user selection
 	ID3D11ShaderResourceView* selectedResourceView = GetSelectedOutputTexture();
-
-	// Set shader parameters for the comparison shader
 	comparisonShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, renderTexture->getShaderResourceView(), selectedResourceView, comparisonSliderPosition, visualizeInRGB);
-	
-
-	// Render the comparison using the CompSlider shader
 	comparisonShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
 
-	// Re-enable the depth buffer
 	renderer->setZBuffer(true);
 
-	// Reset the render target back to the original back buffer
 	renderer->setBackBufferRenderTarget();
 }
 
 
 
 
-
+// Final view
 void App1::FinalPass()
 {
 	renderer->beginScene(0.39f, 0.58f, 0.92f, 1.0f);
@@ -658,14 +626,7 @@ void App1::FinalPass()
 }
 
 
-
-
-// TEMPORAL COHERENCE - https://onlinelibrary.wiley.com/doi/epdf/10.1111/j.1467-8659.2012.03075.x
-// TAA - https://onlinelibrary.wiley.com/doi/epdf/10.1111/cgf.14018
-// Temporal Filtering - https://dl.acm.org/doi/pdf/10.1145/3233301
-// This is good - https://www.elopezr.com/temporal-aa-and-the-quest-for-the-holy-trail/
-
-
+// Camera Changes
 void App1::UpdateCamera(float deltaTime)
 {
 	if (useArcball)
@@ -679,13 +640,13 @@ void App1::UpdateCamera(float deltaTime)
 	}
 }
 
-
+// Initilise Shaders
 void App1::InitialiseShaders(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeight)
 {
 	textureShader = new TextureShader(renderer->getDevice(), hwnd);
 	comparisonShader = new CompSlider(renderer->getDevice(), hwnd);
 	movementShader = new MovementShader(renderer->getDevice(), hwnd);
-	structureTensorShader = new Watercolour(renderer->getDevice(), hwnd);
+	structureTensorShader = new StructureTensor(renderer->getDevice(), hwnd);
 	skyboxShader = new Skybox(renderer->getDevice(), hwnd);
 	oceanShader = new OceanShader(renderer->getDevice(), hwnd);
 	horizontalBlurShader = new HorizontalBlur(renderer->getDevice(), hwnd);
@@ -694,7 +655,7 @@ void App1::InitialiseShaders(HINSTANCE hinstance, HWND hwnd, int screenWidth, in
 	dogFilterShader = new DifferenceOfGuassian(renderer->getDevice(), hwnd);
 	flowCurveShader = new FlowCurve(renderer->getDevice(), hwnd);
 	cqShader = new ColourQuantization(renderer->getDevice(), hwnd);
-	combineShader = new CartoonRendering(renderer->getDevice(), hwnd);
+	combineShader = new CombineShader(renderer->getDevice(), hwnd);
 	paperShader = new PaperShader(renderer->getDevice(), hwnd);
 	depthShader = new DepthShader(renderer->getDevice(), hwnd);
 	temporalShader = new TemporalCoherence(renderer->getDevice(), hwnd);
@@ -702,6 +663,8 @@ void App1::InitialiseShaders(HINSTANCE hinstance, HWND hwnd, int screenWidth, in
 	ycbcrToRgbShader = new YCBCRToRGB(renderer->getDevice(), hwnd);
 }
 
+
+// Initialise Meshs
 void App1::InitialiseMeshs(int screenWidth, int screenHeight)
 {
 	floor = new PlaneMesh(renderer->getDevice(), renderer->getDeviceContext());				// Create Floor Mesh 
@@ -716,6 +679,7 @@ void App1::InitialiseMeshs(int screenWidth, int screenHeight)
 
 }
 
+// Initialise Variables
 void App1::InitialiseVariables(int screenWidth, int screenHeight)
 {
 
@@ -758,7 +722,7 @@ void App1::InitialiseVariables(int screenWidth, int screenHeight)
 	paperStrength = 0.2f;
 	depthFactor = 0.5f;
 
-	movementIndicator = 0.0f;
+
 
 	// Temporal Coherence Controls
 	blendStrength = 0.1f;
@@ -771,11 +735,13 @@ void App1::InitialiseVariables(int screenWidth, int screenHeight)
 	bf_edge = 1.f;
 	bf_abstraction = 3.f;
 
-	visualizeInRGB = false;
-	changeScene = true;
-	changeShip = true;
-}
+	// Booleans for GUI options
+	visualizeInRGB = false; // Change colour space 
+	changeScene = true;		// Change the scene
+	changeShip = true;		// Change Ship model
+}	
 
+// Initialise Render Textures
 void App1::InitialiseRenderTextures(int screenWidth, int screenHeight)
 {
 	renderTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
@@ -799,6 +765,7 @@ void App1::InitialiseRenderTextures(int screenWidth, int screenHeight)
 	
 }
 
+// Get the selected output
 ID3D11ShaderResourceView* App1::GetSelectedOutputTexture()
 {
 	switch (selectedTexture)
@@ -844,37 +811,19 @@ ID3D11ShaderResourceView* App1::GetSelectedOutputTexture()
 }
 
 
-
+// Load in Textures
 void App1::LoadIntextures()
 {
-	textureMgr->loadTexture(L"grass", L"res/funny.jpg"); // Grass Texture
+	textureMgr->loadTexture(L"originalImage", L"res/OriginalImage.png"); // Grass Texture
 	textureMgr->loadTexture(L"wood", L"res/sand.jpg"); // Wood Texture
 	textureMgr->loadTexture(L"water", L"res/water.jpg"); // water Texture
 	textureMgr->loadTexture(L"shipWood", L"res/Shiptexnew.png"); // ship Texture
 	textureMgr->loadTexture(L"shipWood2", L"res/sShipTex.png"); // ship2 Texture
 	textureMgr->loadTexture(L"canvas", L"res/canvas.jpg");
-
-
-
 	paperTexture = textureMgr->getTexture(L"canvas");
-
-
-	textureMgr->loadTexture(L"skyboxTexture", L"res/Askymap.dds"); // CubeMap
-	skyboxTexture = textureMgr->getTexture(L"skyboxTexture");
-	//HRESULT hr = DirectX::CreateDDSTextureFromFile(
-	//	renderer->getDevice(),
-	//	renderer->getDeviceContext(),
-	//	L"res/skymap.dds",
-	//	nullptr, // No resource is needed, only the shader resource view
-	//	&skyboxTexture
-	//);
-	//if (FAILED(hr)) {
-	//	OutputDebugString(L"Failed to load cubemap texture!\n");
-	//}
-
-
 }
 
+// GUI
 void App1::GUI()
 {
 	// Force turn off unnecessary shader stages.

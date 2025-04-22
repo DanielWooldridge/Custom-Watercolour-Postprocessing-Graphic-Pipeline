@@ -6,7 +6,6 @@ cbuffer FilterSettings : register(b0) {
     float spatial;     
     float rangeK;      
     int passing;       
-    float padding;
 };
 
 struct InputType {
@@ -15,46 +14,62 @@ struct InputType {
 };
 
 float4 main(InputType input) : SV_TARGET {
+
+    // Compute constants for Gaussian weighting
     float twoSigmaD2 = 2.0 * spatial * spatial;
     float twoSigmaR2 = 2.0 * rangeK * rangeK;
     float2 uv = input.tex;
 
-    float2 t = flowMap.Sample(sampleType, uv).xy;
-    float2 dir = (passing == 0) ? float2(t.y, -t.x) : t;
+    // Sample Flow map
+    float2 flowDirection = flowMap.Sample(sampleType, uv).xy;
 
-    float2 dabs = abs(dir);
-    float ds = 1.0 / max(dabs.x, dabs.y);
+    // Get Sampling direction based on passing variable and normalize step
+    float2 samplingDirection = (passing == 0) ? float2(flowDirection.y, -flowDirection.x) : flowDirection;
+    float2 absDirection = abs(samplingDirection);
+    float stepIncrement = 1.0 / max(absDirection.x, absDirection.y);
 
     // Get texel size
-    uint width, height;
+    int width, height;
     inputImage.GetDimensions(width, height);
     float2 texelSize = 1.0 / float2(width, height);
 
-    dir *= texelSize;
+    // Scale direction by texelSize
+    samplingDirection *= texelSize;
 
-    float3 center = inputImage.Sample(sampleType, uv).rgb;
-    float3 sum = center;
-    float norm = 1.0;
+    // Read center pixel colour
+    float3 centerColor = inputImage.Sample(sampleType, uv).rgb;
+    float3 blendedColor = centerColor; 
+    float weightSum = 1.0;    
 
     float halfWidth = 2.0 * spatial;
+  
     [loop]
-    for (float d = ds; d <= halfWidth; d += ds) {
-        float3 c0 = inputImage.Sample(sampleType, uv + d * dir).rgb;
-        float3 c1 = inputImage.Sample(sampleType, uv - d * dir).rgb;
-        float e0 = length(c0 - center);
-        float e1 = length(c1 - center);
+    for (float d = stepIncrement; d <= halfWidth; d += stepIncrement) {
 
-        float kerneld = exp(-d * d / twoSigmaD2);
-        float kernele0 = (e0 < rangeK) ? 1.0 : 0.0;
-        float kernele1 = (e1 < rangeK) ? 1.0 : 0.0;
+        // Sample forward and backward along direction 
+        float3 sampleColorForward = inputImage.Sample(sampleType, uv + d * samplingDirection).rgb;
+        float3 sampleColorBackward = inputImage.Sample(sampleType, uv - d * samplingDirection).rgb;
 
-        norm += kerneld * kernele0;
-        norm += kerneld * kernele1;
+        // COmpute differences for weight
+        float colorDiffForward = length(sampleColorForward - centerColor);
+        float colorDiffBackward = length(sampleColorBackward - centerColor);
 
-        sum += kerneld * kernele0 * c0;
-        sum += kerneld * kernele1 * c1;
+        // Spatial weight
+        float spatialWeight = exp(-d * d / twoSigmaD2);
+
+        // Range weight
+        float rangeWeightForward = (colorDiffForward < rangeK) ? 1.0 : 0.0;
+        float rangeWeightBackward = (colorDiffBackward < rangeK) ? 1.0 : 0.0;
+
+        // Noramlize and accumulate values
+        weightSum += spatialWeight * rangeWeightForward;
+        weightSum += spatialWeight * rangeWeightBackward;
+
+        blendedColor += spatialWeight * rangeWeightForward * sampleColorForward;
+        blendedColor += spatialWeight * rangeWeightBackward * sampleColorBackward;
     }
 
-    sum /= norm;
-    return float4(sum, 1.0);
+    // Normalize final colour
+    blendedColor /= weightSum;
+    return float4(blendedColor, 1.0);
 }

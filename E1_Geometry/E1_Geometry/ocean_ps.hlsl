@@ -28,10 +28,7 @@ struct InputType
 
 float4 main(InputType input) : SV_TARGET
 {
-
- 
     float4 textureColor = mtexture.Sample(msampler, input.tex);
     textureColor.a *= transparency;
     return textureColor;
-
 }

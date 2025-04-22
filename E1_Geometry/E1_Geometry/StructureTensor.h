@@ -1,10 +1,10 @@
 #pragma once
 #include "BaseShader.h"
-class Watercolour : public BaseShader
+class StructureTensor : public BaseShader
 {
 public:
-	Watercolour(ID3D11Device* device, HWND hwnd);
-	~Watercolour();
+	StructureTensor(ID3D11Device* device, HWND hwnd);
+	~StructureTensor();
 
 	void setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX& worldMatrix, const XMMATRIX& viewMatrix, const XMMATRIX& projectionMatrix,
 		ID3D11ShaderResourceView* texture);

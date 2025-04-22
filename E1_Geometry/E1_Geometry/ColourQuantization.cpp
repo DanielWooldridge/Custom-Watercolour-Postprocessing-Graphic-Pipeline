@@ -90,6 +90,7 @@ void ColourQuantization::setShaderParameters(ID3D11DeviceContext* deviceContext,
 	deviceContext->Unmap(matrixBuffer, 0);
 	deviceContext->VSSetConstantBuffers(0, 1, &matrixBuffer);
 
+	// Create cbuffer
 	CQFilterType* cqptr;
 	deviceContext->Map(cqBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	cqptr = (CQFilterType*)mappedResource.pData;

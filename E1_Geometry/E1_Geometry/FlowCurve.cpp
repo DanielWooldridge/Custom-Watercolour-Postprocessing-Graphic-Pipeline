@@ -90,7 +90,7 @@ void FlowCurve::setShaderParameters(ID3D11DeviceContext* deviceContext, const XM
 	deviceContext->Unmap(matrixBuffer, 0);
 	deviceContext->VSSetConstantBuffers(0, 1, &matrixBuffer);
 
-	// Send DoG parameters to pixel shader
+	// Create cbuffer
 	FlowCurveFilterType* flowptr;
 	deviceContext->Map(fCurveBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	flowptr = (FlowCurveFilterType*)mappedResource.pData;

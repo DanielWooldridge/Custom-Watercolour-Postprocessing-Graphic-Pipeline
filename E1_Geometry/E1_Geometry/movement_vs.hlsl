@@ -9,10 +9,10 @@ cbuffer TimeBuffer : register(b1)
 {
     float time;
     float movementType;
-    float padding[2]; // Padding to ensure 16-byte alignment
+    float padding[2]; 
 };
 
-// Define input and output structures for the vertex shader
+
 struct InputType
 {
     float4 position : POSITION;
@@ -25,7 +25,7 @@ struct OutputType
     float2 tex : TEXCOORD0;
 };
 
-// Main vertex shader function
+
 OutputType main(InputType input)
 {
     OutputType output;
@@ -33,8 +33,8 @@ OutputType main(InputType input)
 
     
     // Create sine wave movement
-    float waveAmplitude = 3.0f; // Amplitude of the sine wave
-    float waveFrequency = 3.0f; // Frequency of the sine wave
+    float waveAmplitude = 3.0f; 
+    float waveFrequency = 3.0f; 
 
     // Adjust x and y positions based on time
     transformedPosition.x += sin(time * waveFrequency) * waveAmplitude; // Side to side

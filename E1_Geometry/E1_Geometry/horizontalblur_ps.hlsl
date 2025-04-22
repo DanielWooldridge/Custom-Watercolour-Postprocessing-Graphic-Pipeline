@@ -11,12 +11,13 @@ float4 main(InputType input) : SV_TARGET
 {
     float2 uv = input.tex;
 
-    // Predefined Gaussian weights (5-tap kernel)
+    // Predefined Gaussian weights 
     float weights[5] = { 1.0 / 16.0, 4.0 / 16.0, 6.0 / 16.0, 4.0 / 16.0, 1.0 / 16.0 };
 
     // Initialize the smoothed tensor result
     float3 smoothedTensor = float3(0.0, 0.0, 0.0);
 
+    // Get texel size
     uint width, height;
     img.GetDimensions(width, height);
 
@@ -32,9 +33,6 @@ float4 main(InputType input) : SV_TARGET
     // Output the smoothed tensor
     return float4(smoothedTensor, 1.0);
 
-    // Highly doubt this is the issue
-
-
-   //return shaderTexture.Sample(sampleType, input.tex); // Directly output the input texture
+  
 
 }

@@ -91,7 +91,7 @@ void DifferenceOfGuassian::setShaderParameters(ID3D11DeviceContext* deviceContex
 	deviceContext->Unmap(matrixBuffer, 0);
 	deviceContext->VSSetConstantBuffers(0, 1, &matrixBuffer);
 
-	// Send DoG parameters to pixel shader
+	// Create cbuffer
 	DoGFilterType* dogPtr;
 	deviceContext->Map(DoGBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	dogPtr = (DoGFilterType*)mappedResource.pData;
@@ -103,8 +103,8 @@ void DifferenceOfGuassian::setShaderParameters(ID3D11DeviceContext* deviceContex
 	deviceContext->PSSetConstantBuffers(0, 1, &DoGBuffer); // Updated to bind to the pixel shader
 
 	// Set shader textures and samplers
-	deviceContext->PSSetShaderResources(0, 1, &inputTexture); // Texture slot t0
-	deviceContext->PSSetShaderResources(1, 1, &flowMapTexture); // Texture slot t1
+	deviceContext->PSSetShaderResources(0, 1, &inputTexture); 
+	deviceContext->PSSetShaderResources(1, 1, &flowMapTexture); 
 	deviceContext->PSSetSamplers(0, 1, &sampleState);
 }
 

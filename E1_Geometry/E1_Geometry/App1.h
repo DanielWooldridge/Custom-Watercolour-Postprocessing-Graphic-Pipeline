@@ -66,7 +66,6 @@ protected:
 	void InitialiseVariables(int screenWidth, int screenHeight);
 	void InitialiseRenderTextures(int screenWidth, int screenHeight);
 	ID3D11ShaderResourceView* GetSelectedOutputTexture();
-	void ConvertColourSpace(ID3D11ShaderResourceView* source, RenderTexture* destination);
 
 
 private:
@@ -75,7 +74,7 @@ private:
 	TextureShader* textureShader;
 	CompSlider* comparisonShader;
 	MovementShader* movementShader;
-	Watercolour* structureTensorShader;
+	StructureTensor* structureTensorShader;
 	Skybox* skyboxShader;
 	OceanShader* oceanShader;
 	HorizontalBlur* horizontalBlurShader;
@@ -84,7 +83,7 @@ private:
 	DifferenceOfGuassian* dogFilterShader;
 	FlowCurve* flowCurveShader;
 	ColourQuantization* cqShader;
-	CartoonRendering* combineShader;
+	CombineShader* combineShader;
 	PaperShader* paperShader;
 	DepthShader* depthShader;
 	TemporalCoherence* temporalShader;
@@ -173,22 +172,17 @@ private:
 	bool useArcball = false;  // Toggle for ImGui
 	DirectX::XMFLOAT3 lastFreeCameraPosition; // Store previous free camera position
 
-	float movementIndicator;
+
 	float no_movement;
 	float wave_movement;
 	float sine_movement;
 
-
-	int frameCount = 0;
 
 	bool changeScene;
 	bool changeShip;
 
 	//Overarching Vairables
 	float totalTime;
-	ID3D11ShaderResourceView* skyMapTextures[6];
-	ID3D11RasterizerState* skyboxRasterizerState;
-	ID3D11ShaderResourceView* skyboxTexture;
 	float bf_edge;
 	float bf_abstraction;
 

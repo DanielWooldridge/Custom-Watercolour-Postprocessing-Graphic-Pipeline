@@ -1,11 +1,11 @@
 #include "CartoonRendering.h"
 
-CartoonRendering::CartoonRendering(ID3D11Device* device, HWND hwnd) : BaseShader(device, hwnd)
+CombineShader::CombineShader(ID3D11Device* device, HWND hwnd) : BaseShader(device, hwnd)
 {
 	initShader(L"standard_vs.cso", L"cartoon_rendering_ps.cso");
 }
 
-CartoonRendering::~CartoonRendering()
+CombineShader::~CombineShader()
 {
 	// Release the matrix constant buffer.
 	if (matrixBuffer)
@@ -24,7 +24,7 @@ CartoonRendering::~CartoonRendering()
 	BaseShader::~BaseShader();
 }
 
-void CartoonRendering::initShader(const wchar_t* vsFilename, const wchar_t* psFilename)
+void CombineShader::initShader(const wchar_t* vsFilename, const wchar_t* psFilename)
 {
 	D3D11_BUFFER_DESC matrixBufferDesc;
 	D3D11_SAMPLER_DESC samplerDesc;
@@ -60,7 +60,7 @@ void CartoonRendering::initShader(const wchar_t* vsFilename, const wchar_t* psFi
 }
 
 
-void CartoonRendering::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX& worldMatrix, const XMMATRIX& viewMatrix, const XMMATRIX& projectionMatrix, ID3D11ShaderResourceView* inputTexture, ID3D11ShaderResourceView* inputTextureTwo)
+void CombineShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX& worldMatrix, const XMMATRIX& viewMatrix, const XMMATRIX& projectionMatrix, ID3D11ShaderResourceView* inputTexture, ID3D11ShaderResourceView* inputTextureTwo)
 {
 	HRESULT result;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;

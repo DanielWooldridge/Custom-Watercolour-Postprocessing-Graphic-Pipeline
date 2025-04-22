@@ -80,7 +80,7 @@ void RGBToYCBCR::setShaderParameters(ID3D11DeviceContext* deviceContext, const X
 	tview = XMMatrixTranspose(viewMatrix);
 	tproj = XMMatrixTranspose(projectionMatrix);
 
-	// Send matrix data
+	// Create cbuffer
 	result = deviceContext->Map(matrixBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	dataPtr = (MatrixBufferType*)mappedResource.pData;
 	dataPtr->world = tworld;// worldMatrix;

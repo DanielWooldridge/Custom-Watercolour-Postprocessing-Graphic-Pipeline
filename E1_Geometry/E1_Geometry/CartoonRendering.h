@@ -1,11 +1,11 @@
 #pragma once
 #include "BaseShader.h"
 
-class CartoonRendering : public BaseShader
+class CombineShader : public BaseShader
 {
 public:
-	CartoonRendering(ID3D11Device* device, HWND hwnd);
-	~CartoonRendering();
+	CombineShader(ID3D11Device* device, HWND hwnd);
+	~CombineShader();
 
 	void setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX& worldMatrix, const XMMATRIX& viewMatrix, const XMMATRIX& projectionMatrix,
 		ID3D11ShaderResourceView* inputTexture, ID3D11ShaderResourceView* inputTextureTwo);

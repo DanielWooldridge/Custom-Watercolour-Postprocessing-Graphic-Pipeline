@@ -33,13 +33,16 @@ float3 YCbCrToRGB(float3 ycbcr)
 float4 main(InputType input) : SV_TARGET
 {
     float2 uv = input.tex;
+     // Sample both textures at this pixel
     float4 aColor = aTexture.Sample(aSampler, uv);
     float4 bColor = bTexture.Sample(bSampler, uv);
 
+        // Convert bColor to RGB if true
     if (visualizeInRGB)
     {
         bColor.rgb = YCbCrToRGB(bColor.rgb);
     }
 
+    // Use slider to choose which texture to show at this UV
     return (uv.x < sliderPosition) ? aColor : bColor;
 }

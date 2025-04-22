@@ -103,6 +103,7 @@ void TemporalCoherence::setShaderParameters(ID3D11DeviceContext* deviceContext, 
 	deviceContext->Unmap(matrixBuffer, 0);
 	deviceContext->VSSetConstantBuffers(0, 1, &matrixBuffer);
 
+	// Create cbuffer
 	TemporalFilterType* tcptr;
 	deviceContext->Map(temporalBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	tcptr = (TemporalFilterType*)mappedResource.pData;
@@ -110,11 +111,7 @@ void TemporalCoherence::setShaderParameters(ID3D11DeviceContext* deviceContext, 
 	deviceContext->Unmap(temporalBuffer, 0);
 	deviceContext->PSSetConstantBuffers(0, 1, &temporalBuffer);
 
-
-	// Set shader texture and sampler resource in the pixel shader.
 	deviceContext->PSSetShaderResources(0, 1, &previousFrame);
-	//deviceContext->PSSetShaderResources(0, 10, previousFrame);
-	//deviceContext->PSSetShaderResources(10, 1, &currentFrame);
 	deviceContext->PSSetShaderResources(1, 1, &currentFrame);
 	deviceContext->PSSetSamplers(0, 1, &sampleState);
 }

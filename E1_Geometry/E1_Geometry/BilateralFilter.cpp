@@ -72,13 +72,14 @@ void BilateralFilter::setShaderParameters(ID3D11DeviceContext* deviceContext, co
     deviceContext->Unmap(matrixBuffer, 0);
     deviceContext->VSSetConstantBuffers(0, 1, &matrixBuffer);
 
-    // Map the filter settings buffer
+    // Create cbuffer
     FilterSettingsBufferType* filterPtr;
     result = deviceContext->Map(filterBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
     filterPtr = (FilterSettingsBufferType*)mappedResource.pData;
     filterPtr->spatial = spatial;
     filterPtr->range = range;
     filterPtr->pass = pass;
+
     deviceContext->Unmap(filterBuffer, 0);
     deviceContext->PSSetConstantBuffers(0, 1, &filterBuffer);
 

@@ -1,11 +1,11 @@
 #include "StructureTensor.h"
 
-Watercolour::Watercolour(ID3D11Device* device, HWND hwnd) : BaseShader(device, hwnd)
+StructureTensor::StructureTensor(ID3D11Device* device, HWND hwnd) : BaseShader(device, hwnd)
 {
 	initShader(L"standard_vs.cso", L"structureTensor_ps.cso");
 }
 
-Watercolour::~Watercolour()
+StructureTensor::~StructureTensor()
 {
 
 	// Release the sampler state.
@@ -33,7 +33,7 @@ Watercolour::~Watercolour()
 	BaseShader::~BaseShader();
 }
 
-void Watercolour::initShader(const wchar_t* vsFilename, const wchar_t* psFilename)
+void StructureTensor::initShader(const wchar_t* vsFilename, const wchar_t* psFilename)
 {
 
 	D3D11_BUFFER_DESC matrixBufferDesc;
@@ -69,7 +69,7 @@ void Watercolour::initShader(const wchar_t* vsFilename, const wchar_t* psFilenam
 	renderer->CreateSamplerState(&samplerDesc, &sampleState);
 }
 
-void Watercolour::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX& worldMatrix, const XMMATRIX& viewMatrix, const XMMATRIX& projectionMatrix, ID3D11ShaderResourceView* texture)
+void StructureTensor::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX& worldMatrix, const XMMATRIX& viewMatrix, const XMMATRIX& projectionMatrix, ID3D11ShaderResourceView* texture)
 {
 
 	HRESULT result;

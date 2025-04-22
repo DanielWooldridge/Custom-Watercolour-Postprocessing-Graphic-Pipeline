@@ -9,6 +9,7 @@ struct InputType
     float3 normal : NORMAL;
 };
 
+// Function of matrix conversion
 float3 YCbCrtoRGB(float3 ycc)
 {
     float3 c = ycc - float3(0.0, 128.0 / 255.0, 128.0 / 255.0);
@@ -21,6 +22,7 @@ float3 YCbCrtoRGB(float3 ycc)
 
 float4 main(InputType input) : SV_TARGET
 {
+    // convert colour space
     float3 ycbcr = saturate(tex.Sample(samplerState, input.tex).rgb);
     float3 rgb = YCbCrtoRGB(ycbcr);
     return float4(saturate(rgb), 1.0);

@@ -88,6 +88,7 @@ void PaperShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const 
 	deviceContext->Unmap(matrixBuffer, 0);
 	deviceContext->VSSetConstantBuffers(0, 1, &matrixBuffer);
 
+	// Create cbuffer
 	paperTextureBuffer* paperptr;
 	result = deviceContext->Map(paperBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	paperptr = (paperTextureBuffer*)mappedResource.pData;
@@ -98,7 +99,7 @@ void PaperShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const 
 
 	deviceContext->PSSetShaderResources(0, 1, &paperTex); // Texture slot t0
 	deviceContext->PSSetShaderResources(1, 1, &renderTex); // Texture slot t1
-	deviceContext->PSSetShaderResources(2, 1, &depthTex); // Texture slot t1
+	deviceContext->PSSetShaderResources(2, 1, &depthTex); // Texture slot t2
 	deviceContext->PSSetSamplers(0, 1, &sampleState);
 }
 

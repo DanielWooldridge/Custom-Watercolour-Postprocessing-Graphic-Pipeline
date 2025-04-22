@@ -33,16 +33,19 @@ void DepthShader::initShader(const wchar_t* vsFilename, const wchar_t* psFilenam
 	loadVertexShader(vsFilename);
 	loadPixelShader(psFilename);
 
-	//  MATRIX BUFFER
+
+	// Setup the description of the dynamic matrix constant buffer that is in the vertex shader.
 	matrixBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 	matrixBufferDesc.ByteWidth = sizeof(MatrixBufferType);
 	matrixBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	matrixBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	matrixBufferDesc.MiscFlags = 0;
 	matrixBufferDesc.StructureByteStride = 0;
+
+	// Create the constant buffer pointer so we can access the vertex shader constant buffer from within this class.
 	renderer->CreateBuffer(&matrixBufferDesc, NULL, &matrixBuffer);
 
-	//  WAVE BUFFER (AFTER MATRIX BUFFER)
+	// Wave buffer
 	waveBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 	waveBufferDesc.ByteWidth = sizeof(WaveParams);
 	waveBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
@@ -59,12 +62,11 @@ void DepthShader::setShaderParameters(ID3D11DeviceContext* deviceContext, XMMATR
 	MatrixBufferType* dataPtr;
 	WaveParams* waveData;
 
-	// Transpose matrices for HLSL compatibility
 	XMMATRIX tworld = XMMatrixTranspose(worldMatrix);
 	XMMATRIX tview = XMMatrixTranspose(viewMatrix);
 	XMMATRIX tproj = XMMatrixTranspose(projectionMatrix);
 
-	// 1. MAP MATRIX BUFFER
+	// Send matrix data (if needed by the vertex shader)
 	deviceContext->Map(matrixBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	dataPtr = (MatrixBufferType*)mappedResource.pData;
 	dataPtr->world = tworld;
@@ -73,11 +75,11 @@ void DepthShader::setShaderParameters(ID3D11DeviceContext* deviceContext, XMMATR
 	deviceContext->Unmap(matrixBuffer, 0);
 	deviceContext->VSSetConstantBuffers(0, 1, &matrixBuffer);
 
-	// 2. MAP WAVE BUFFER (DO NOT REUSE mappedResource from above)
+	// Create cbuffer
 	deviceContext->Map(waveBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	waveData = (WaveParams*)mappedResource.pData;
 
-	// 3. CORRECTLY ASSIGN VALUES
+
 	waveData->time = time;
 	waveData->speed = speed;
 	waveData->amplitude = amplitude;
@@ -87,10 +89,8 @@ void DepthShader::setShaderParameters(ID3D11DeviceContext* deviceContext, XMMATR
 	waveData->transparency = transparency;
 	waveData->movementType = movementIndicator; // Now safe to add back
 
-	// 4. UNMAP WAVE BUFFER
-	deviceContext->Unmap(waveBuffer, 0);
 
-	// 5. BIND TO SHADERS
+	deviceContext->Unmap(waveBuffer, 0);
 	deviceContext->VSSetConstantBuffers(1, 1, &waveBuffer);
 	deviceContext->PSSetConstantBuffers(1, 1, &waveBuffer);
 }
