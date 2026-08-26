@@ -29,6 +29,8 @@ The full per-frame pass order, from `App1::Render()`:
 15. **Comparison Pass** – renders a wipe/slider view of the original vs. stylised output
 16. **Final Pass** – presents the selected output to the screen
 
+<img width="2320" height="2280" alt="watercolour_pipeline_passes" src="https://github.com/user-attachments/assets/2268b8bd-a9f8-4ee6-b73c-788fb0f8dc48" />
+
 ## Features
 
 - **Flow-guided Difference of Gaussians** for coherent, direction-aware line art instead of noisy per-pixel edge detection
@@ -39,6 +41,27 @@ The full per-frame pass order, from `App1::Render()`:
 - **Before/after comparison slider** to directly compare the original render against the stylised result
 - **Full runtime debug UI (ImGui)** exposing every intermediate texture in the pipeline (16 selectable output stages) and every tunable parameter (bilateral filter strength, DoG sensitivity/smoothing/tau, flow curve phi/sigma, quantization level, paper strength, temporal blend strength, and more)
 - **Animated demo scene**: a simple wave-simulated ocean, ship models, skybox, and an arcball camera for orbiting the scene
+
+## Performance
+
+The post-processing pipeline was profiled by measuring the GPU time
+required by each render pass. Testing was performed using an NVIDIA
+GeForce RTX 4060, with the full pipeline completing in approximately
+1.98 ms without the additional temporal and comparison passes, and
+2.21 ms when these passes were included.
+
+<img width="770" height="600" alt="gpu-usage-pie-chart-original" src="https://github.com/user-attachments/assets/9d1d6f6b-c0bf-42d1-b697-8f2619c1c57f" />
+
+The bilateral filter is the most computationally expensive stage,
+accounting for approximately 61% of the total GPU rendering time.
+This is primarily due to the filter being executed across multiple
+passes within the pipeline.
+
+The Flow-based Difference of Gaussians and Structure Tensor stages
+represent the next largest contributors to GPU usage. Despite these
+costs, the complete pipeline remains well within a typical 60 FPS
+rendering budget of approximately 16.6 ms per frame.
+
 
 ## Project structure
 
@@ -55,6 +78,7 @@ E1_Geometry/
 ├── DXFramework/          # Course-provided DirectX 11 base framework
 └── GetLibraries.bat      # Fetches the required DXFramework libraries
 ```
+
 
 ## Building
 
